@@ -92,32 +92,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.protocol}//${window.location.host}/auth/callback`
+          emailRedirectTo: `${window.location.protocol}//${window.location.host}/auth/callback`,
+          data: {
+            full_name: userData.full_name,
+            school_name: userData.school_name,
+            state: userData.state
+          }
         }
       });
 
       if (error) throw error;
 
-      // Create profile after successful signup
-      if (data.user) {
-        const profileData = {
-          user_id: data.user.id,
-          email: data.user.email!,
-          full_name: userData.full_name,
-          school_name: userData.school_name,
-          state: userData.state,
-          role: 'student' as const
-        };
-
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert([profileData]);
-
-        if (profileError) {
-          console.error('Error creating profile:', profileError);
-        }
-      }
-      
+      // Profile will be created automatically by database trigger
       toast.success('Account created! Please check your email to verify.');
     } catch (error: any) {
       toast.error(error.message || 'Failed to create account');

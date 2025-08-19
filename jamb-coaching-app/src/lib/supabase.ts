@@ -112,7 +112,12 @@ export async function signUp(email: string, password: string, userData: { full_n
     email,
     password,
     options: {
-      emailRedirectTo: `${window.location.protocol}//${window.location.host}/auth/callback`
+      emailRedirectTo: `${window.location.protocol}//${window.location.host}/auth/callback`,
+      data: {
+        full_name: userData.full_name,
+        school_name: userData.school_name,
+        state: userData.state
+      }
     }
   });
 
@@ -121,24 +126,27 @@ export async function signUp(email: string, password: string, userData: { full_n
     throw error;
   }
 
-  // Create profile after successful signup
-  if (data.user) {
-    const profileData = {
-      user_id: data.user.id,
-      email: data.user.email!,
-      full_name: userData.full_name,
-      school_name: userData.school_name,
-      state: userData.state,
-      role: 'student' as const
-    };
+  // Profile will be created automatically by database trigger
+  // Update profile with additional data if needed
+  if (data.user && (userData.school_name || userData.state)) {
+    setTimeout(async () => {
+      try {
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({
+            school_name: userData.school_name,
+            state: userData.state,
+            updated_at: new Date().toISOString()
+          })
+          .eq('user_id', data.user.id);
 
-    const { error: profileError } = await supabase
-      .from('profiles')
-      .insert([profileData]);
-
-    if (profileError) {
-      console.error('Error creating profile:', profileError);
-    }
+        if (updateError) {
+          console.error('Error updating profile:', updateError);
+        }
+      } catch (err) {
+        console.error('Error in profile update:', err);
+      }
+    }, 1000); // Wait 1 second for profile to be created by trigger
   }
 
   return data;
