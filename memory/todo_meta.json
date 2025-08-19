@@ -1,0 +1,41 @@
+{
+  "todos": {
+    "Coordinator": {
+      "1": {
+        "id": "1",
+        "content": "Research JAMB exam structure and requirements",
+        "details": "1. Research JAMB exam format and question types for each subject (Math, Physics, Chemistry, Biology, English). 2. Analyze current JAMB preparation apps and best practices. 3. Define question difficulty levels and scoring systems. 4. Research security requirements for educational apps in Nigeria.",
+        "status": "pending",
+        "priority": "high"
+      },
+      "2": {
+        "id": "2",
+        "content": "Design app architecture and security framework",
+        "details": "1. Design secure user authentication system. 2. Plan question database structure with daily rotation logic. 3. Define API security measures and data encryption. 4. Design offline capabilities and data synchronization. 5. Plan user progress tracking and analytics.",
+        "status": "pending",
+        "priority": "high"
+      },
+      "3": {
+        "id": "3",
+        "content": "Address Android app development approach",
+        "details": "1. Clarify with user the preferred approach: native Android app vs Progressive Web App (PWA). 2. If native Android is required, provide complete code and deployment guide. 3. If PWA is acceptable, build a mobile-optimized web app that works like a native app.",
+        "status": "pending",
+        "priority": "high"
+      },
+      "4": {
+        "id": "4",
+        "content": "Build the JAMB coaching application",
+        "details": "1. Implement user registration and authentication system. 2. Create question management system with daily rotation (20 questions per subject every 3 days). 3. Build practice test interface for all 5 subjects. 4. Implement progress tracking and performance analytics. 5. Add security features including data encryption and secure API calls. 6. Optimize for mobile devices with offline capabilities.",
+        "status": "pending",
+        "priority": "high"
+      },
+      "5": {
+        "id": "5",
+        "content": "Test and deploy the application",
+        "details": "1. Conduct comprehensive testing of all features. 2. Test security measures and data protection. 3. Verify daily question rotation logic. 4. Deploy the application (or provide deployment instructions). 5. Create user documentation and setup guide.",
+        "status": "pending",
+        "priority": "medium"
+      }
+    }
+  }
+}
