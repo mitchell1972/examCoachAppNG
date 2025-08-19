@@ -26,14 +26,14 @@
         "id": "4",
         "content": "Build AI-powered JAMB coaching PWA",
         "details": "Build complete Progressive Web App with Supabase backend including: 1. AI question generation and management system 2. Student learning interface with daily questions (20 per subject every 3 days) 3. Admin dashboard for question management 4. Secure authentication and data protection 5. Offline capabilities and PWA features 6. Performance analytics and personalized learning 7. All 5 subjects: Math, Physics, Chemistry, Biology, English",
-        "status": "in_progress",
+        "status": "completed",
         "priority": "high"
       },
       "5": {
         "id": "5",
         "content": "Test and deploy the application",
         "details": "1. Conduct comprehensive testing of all features. 2. Test security measures and data protection. 3. Verify daily question rotation logic. 4. Deploy the application (or provide deployment instructions). 5. Create user documentation and setup guide.",
-        "status": "pending",
+        "status": "in_progress",
         "priority": "high"
       }
     }

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="%PUBLIC_URL%/images/clean_pwa_progressive_web_app_icon_shopping_bag.jpg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#2563eb" />
+    <meta name="description" content="AI-powered JAMB coaching app with personalized questions, smart analytics, and comprehensive practice for all 5 subjects." />
+    
+    <!-- PWA Meta Tags -->
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/images/clean_pwa_progressive_web_app_icon_shopping_bag.jpg" />
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    
+    <!-- iOS PWA Support -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="JAMB Coach" />
+    
+    <!-- Android PWA Support -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    
+    <!-- Microsoft Tiles -->
+    <meta name="msapplication-TileColor" content="#2563eb" />
+    <meta name="msapplication-TileImage" content="%PUBLIC_URL%/images/clean_pwa_progressive_web_app_icon_shopping_bag.jpg" />
+    
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="JAMB Coach - AI-Powered Exam Preparation" />
+    <meta property="og:description" content="AI-powered JAMB coaching app with personalized questions, smart analytics, and comprehensive practice for all 5 subjects." />
+    <meta property="og:image" content="%PUBLIC_URL%/images/nigerian-jamb-exam-students-computer-lab-study.jpg" />
+    <meta property="og:url" content="https://your-domain.com" />
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="JAMB Coach - AI-Powered Exam Preparation" />
+    <meta name="twitter:description" content="AI-powered JAMB coaching app with personalized questions, smart analytics, and comprehensive practice for all 5 subjects." />
+    <meta name="twitter:image" content="%PUBLIC_URL%/images/nigerian-jamb-exam-students-computer-lab-study.jpg" />
+    
+    <title>JAMB Coach - AI-Powered Exam Preparation</title>
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+    
+    <!-- Service Worker Registration -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then((registration) => {
+              console.log('SW registered: ', registration);
+            })
+            .catch((registrationError) => {
+              console.log('SW registration failed: ', registrationError);
+            });
+        });
+      }
+    </script>
+  </body>
+</html>

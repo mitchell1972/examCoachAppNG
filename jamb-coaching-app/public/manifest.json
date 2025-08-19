@@ -1,0 +1,67 @@
+{
+  "name": "JAMB Coach - AI-Powered Exam Preparation",
+  "short_name": "JAMB Coach",
+  "description": "AI-powered JAMB coaching app with personalized questions, smart analytics, and comprehensive practice for all 5 subjects.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "orientation": "portrait",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/images/clean_pwa_progressive_web_app_icon_shopping_bag.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/images/clean_pwa_progressive_web_app_icon_shopping_bag.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["education", "productivity"],
+  "lang": "en",
+  "dir": "ltr",
+  "prefer_related_applications": false,
+  "shortcuts": [
+    {
+      "name": "Practice Mathematics",
+      "short_name": "Math Practice",
+      "description": "Start practicing Mathematics questions",
+      "url": "/subject/Mathematics",
+      "icons": [
+        {
+          "src": "/images/clean_mathematics_equations_chalkboard_background.jpg",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Practice Physics",
+      "short_name": "Physics Practice",
+      "description": "Start practicing Physics questions",
+      "url": "/subject/Physics",
+      "icons": [
+        {
+          "src": "/images/physics_laboratory_equipment_collection.jpg",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "View Dashboard",
+      "short_name": "Dashboard",
+      "description": "View your progress and analytics",
+      "url": "/dashboard",
+      "icons": [
+        {
+          "src": "/images/educational_student_performance_analytics_dashboard.jpg",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ]
+}
