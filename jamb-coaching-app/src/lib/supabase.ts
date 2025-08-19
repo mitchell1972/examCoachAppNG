@@ -1,9 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 
-// IMPORTANT: Replace these with your actual Supabase credentials
-// Get these from your Supabase project dashboard
-const supabaseUrl = 'https://zjfilhbczaquokqlcoej.supabase.co';
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpqZmlsaGJjemFxdW9rcWxjb2VqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA4NDU3MzIsImV4cCI6MjA4NjQyMTczMn0.LowG3Ak2_C_gstx0lHWyR9PBgEOKZY_4_C4TovKsGU8';
+// Use environment variables in production, fallback to direct values for development
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://zjfilhbczaquokqlcoej.supabase.co';
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpqZmlsaGJjemFxdW9rcWxjb2VqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU1MzQ2MjIsImV4cCI6MjA3MTExMDYyMn0.b6YATor8UyDwYSiSagOQUxM_4sqfCv-89CBXVgC2hP0';
 
 // Initialize Supabase client
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
