@@ -3,31 +3,24 @@
     "Coordinator": {
       "1": {
         "id": "1",
-        "content": "Update subscription system to enforce per-subject free limits",
-        "details": "Modify useSubscription hook to track 20 free questions per subject instead of 25 total questions across all subjects. Update logic to check per-subject limits and block access when exceeded.",
-        "status": "completed",
+        "content": "Update subscription logic to 3-day cycles with 50 questions per subject",
+        "details": "1. Modify useSubscription.ts to track 3-day cycles instead of monthly limits. 2. Update question counting logic to reset every 3 days. 3. Implement free first set (50 questions) per subject logic. 4. Update checkQuestionAccess() function for new cycle-based system.",
+        "status": "pending",
         "priority": "high"
       },
       "2": {
         "id": "2",
-        "content": "Update PaywallModal and SubscriptionBadge components",
-        "details": "Modify components to display per-subject question limits and remaining counts. Show which specific subject has reached its limit.",
-        "status": "completed",
+        "content": "Update all UI text to reflect new subscription model",
+        "details": "1. Update dashboard to show '50 questions every 3 days per subject'. 2. Update subject pages with new messaging. 3. Update PaywallModal and SubscriptionBadge components. 4. Update pricing and subscription description text. 5. Update all references from '20 questions' to '50 questions every 3 days'.",
+        "status": "pending",
         "priority": "high"
       },
       "3": {
         "id": "3",
-        "content": "Ensure strict paywall enforcement",
-        "details": "Verify that all practice features are completely blocked when free limits are exceeded, requiring subscription to continue.",
-        "status": "completed",
-        "priority": "high"
-      },
-      "4": {
-        "id": "4",
-        "content": "Test and deploy the updated subscription limits",
-        "details": "Build and deploy the updated app with new per-subject limits, then test to ensure proper enforcement.",
-        "status": "completed",
-        "priority": "high"
+        "content": "Deploy updated application",
+        "details": "Deploy the updated app with new subscription model and verify all changes are working correctly.",
+        "status": "pending",
+        "priority": "medium"
       }
     }
   }
