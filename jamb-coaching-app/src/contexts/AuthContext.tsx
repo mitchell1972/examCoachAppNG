@@ -24,16 +24,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     async function loadUser() {
       try {
+        // Add timeout for loading state to prevent indefinite loading
+        const loadingTimeout = setTimeout(() => {
+          console.warn('User loading timeout reached - forcing loading state to false');
+          setLoading(false);
+        }, 5000); // 5 second timeout
+        
         const currentUser = await getCurrentUser();
         setUser(currentUser);
         
         if (currentUser) {
-          const userProfile = await getUserProfile(currentUser.id);
-          setProfile(userProfile);
+          try {
+            const userProfile = await getUserProfile(currentUser.id);
+            setProfile(userProfile);
+          } catch (profileError) {
+            console.error('Error loading user profile:', profileError);
+            // Still allow app to continue even if profile fetch fails
+          }
         }
+        
+        // Clear timeout if everything loads successfully
+        clearTimeout(loadingTimeout);
+        setLoading(false);
       } catch (error) {
         console.error('Error loading user:', error);
-      } finally {
         setLoading(false);
       }
     }
@@ -41,22 +55,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     loadUser();
 
     // Set up auth listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        setUser(session?.user || null);
-        
-        if (session?.user) {
-          const userProfile = await getUserProfile(session.user.id);
-          setProfile(userProfile);
-        } else {
-          setProfile(null);
+    try {
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(
+        async (_event, session) => {
+          setUser(session?.user || null);
+          
+          if (session?.user) {
+            try {
+              const userProfile = await getUserProfile(session.user.id);
+              setProfile(userProfile);
+            } catch (profileError) {
+              console.error('Error loading user profile from auth change:', profileError);
+            }
+          } else {
+            setProfile(null);
+          }
+          
+          setLoading(false);
         }
-        
-        setLoading(false);
-      }
-    );
+      );
 
-    return () => subscription.unsubscribe();
+      return () => subscription.unsubscribe();
+    } catch (error) {
+      console.error('Error setting up auth listener:', error);
+      setLoading(false);
+      return () => {}; // Return empty cleanup function
+    }
   }, []);
 
   const refreshProfile = async () => {

@@ -58,6 +58,51 @@ const testimonials = [
 ];
 
 export default function HomePage() {
+  // Add error state
+  const [error, setError] = React.useState<string | null>(null);
+
+  // Simple ping to test if backend is accessible
+  React.useEffect(() => {
+    const checkServerConnection = async () => {
+      try {
+        const response = await fetch('https://zjfilhbczaquokqlcoej.supabase.co/rest/v1/', {
+          method: 'GET',
+          headers: {
+            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpqZmlsaGJjemFxdW9rcWxjb2VqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU1MzQ2MjIsImV4cCI6MjA3MTExMDYyMn0.b6YATor8UyDwYSiSagOQUxM_4sqfCv-89CBXVgC2hP0'
+          }
+        });
+        
+        if (!response.ok) {
+          console.warn('Supabase connection issue. Status:', response.status);
+        } else {
+          console.log('Supabase connection successful');
+        }
+      } catch (err) {
+        console.error('Failed to connect to Supabase:', err);
+        setError('Unable to connect to the server. Please check your internet connection and try again.');
+      }
+    };
+    
+    checkServerConnection();
+  }, []);
+
+  // Error message display
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+        <div className="max-w-md w-full bg-white shadow-lg rounded-lg p-6 border border-red-200">
+          <h2 className="text-2xl font-bold text-red-600 mb-4">Connection Error</h2>
+          <p className="text-gray-600 mb-4">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition duration-200"
+          >
+            Retry Connection
+          </button>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="bg-white">
       {/* Header */}

@@ -1,2 +1,3 @@
-2025/08/19-20:55:21.380 e7c Creating DB /workspace/browser/user_data/Default/Session Storage since it was missing.
-2025/08/19-20:55:21.384 e7c Reusing MANIFEST /workspace/browser/user_data/Default/Session Storage/MANIFEST-000001
+2025/08/20-11:05:31.678 234 Reusing MANIFEST /workspace/browser/user_data/Default/Session Storage/MANIFEST-000001
+2025/08/20-11:05:31.679 234 Recovering log #3
+2025/08/20-11:05:31.679 234 Reusing old log /workspace/browser/user_data/Default/Session Storage/000003.log 
