@@ -97,6 +97,39 @@ export interface DailyQuestions {
   created_at: string;
 }
 
+export interface QuestionSet {
+  id: string;
+  subject: string;
+  title: string;
+  description?: string;
+  created_at: string;
+  is_free: boolean;
+  is_active: boolean;
+  generation_source: string;
+  total_questions: number;
+  delivery_date: string;
+  can_access?: boolean;
+  access_reason?: string;
+  is_first_set?: boolean;
+}
+
+export interface QuestionSetQuestion {
+  id: string;
+  question_set_id: string;
+  question_id: string;
+  position: number;
+  created_at: string;
+}
+
+export interface UserQuestionSetAccess {
+  id: string;
+  user_id: string;
+  question_set_id: string;
+  can_access: boolean;
+  accessed_at?: string;
+  created_at: string;
+}
+
 // Auth helper functions
 export async function getCurrentUser() {
   const { data: { user }, error } = await supabase.auth.getUser();
@@ -333,6 +366,112 @@ export async function getUserProgress(userId: string): Promise<UserProgress[]> {
   }
 
   return data || [];
+}
+
+// Question Set Functions
+export async function getAvailableQuestionSets(subject: string): Promise<QuestionSet[]> {
+  const user = await getCurrentUser();
+  if (!user) {
+    throw new Error('User not authenticated');
+  }
+
+  const session = await supabase.auth.getSession();
+  if (!session.data.session) {
+    throw new Error('No active session');
+  }
+
+  const response = await fetch(`${supabaseUrl}/functions/v1/question-set-management?action=available-sets&subject=${encodeURIComponent(subject)}`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${session.data.session.access_token}`,
+      'Content-Type': 'application/json'
+    }
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error?.message || 'Failed to fetch question sets');
+  }
+
+  const data = await response.json();
+  return data?.data?.questionSets || [];
+}
+
+export async function getQuestionSetQuestions(questionSetId: string): Promise<Question[]> {
+  const user = await getCurrentUser();
+  if (!user) {
+    throw new Error('User not authenticated');
+  }
+
+  const session = await supabase.auth.getSession();
+  if (!session.data.session) {
+    throw new Error('No active session');
+  }
+
+  const response = await fetch(`${supabaseUrl}/functions/v1/question-set-management?action=questions&question_set_id=${questionSetId}`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${session.data.session.access_token}`,
+      'Content-Type': 'application/json'
+    }
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error?.message || 'Failed to fetch questions');
+  }
+
+  const data = await response.json();
+  return data?.data?.questions || [];
+}
+
+export async function deleteQuestionSet(questionSetId: string): Promise<void> {
+  const user = await getCurrentUser();
+  if (!user) {
+    throw new Error('User not authenticated');
+  }
+
+  const session = await supabase.auth.getSession();
+  if (!session.data.session) {
+    throw new Error('No active session');
+  }
+
+  const response = await fetch(`${supabaseUrl}/functions/v1/question-set-management?action=delete-set`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${session.data.session.access_token}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      question_set_id: questionSetId
+    })
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error?.message || 'Failed to delete question set');
+  }
+}
+
+// Updated daily questions function to work with question sets
+export async function getDailyQuestionsFromSets(subject: string): Promise<Question[]> {
+  try {
+    const questionSets = await getAvailableQuestionSets(subject);
+    
+    // Get the most recent question set that the user can access
+    const accessibleSets = questionSets.filter(set => set.can_access);
+    
+    if (accessibleSets.length === 0) {
+      return [];
+    }
+
+    // Get the most recent set
+    const latestSet = accessibleSets[0];
+    return await getQuestionSetQuestions(latestSet.id);
+  } catch (error) {
+    console.error('Error getting daily questions from sets:', error);
+    return [];
+  }
 }
 
 // Constants

@@ -16,6 +16,7 @@ import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
 import PracticePage from './pages/PracticePage';
 import SubjectPage from './pages/SubjectPage';
+import QuestionSetsPage from './pages/QuestionSetsPage';
 import ProfilePage from './pages/ProfilePage';
 import AdminPage from './pages/AdminPage';
 import AuthCallbackPage from './pages/AuthCallbackPage';
@@ -49,6 +50,7 @@ function App() {
                 <Route path="/dashboard" element={<DashboardPage />} />
                 <Route path="/practice" element={<PracticePage />} />
                 <Route path="/subject/:subject" element={<SubjectPage />} />
+                <Route path="/question-sets/:subject" element={<QuestionSetsPage />} />
                 <Route path="/profile" element={<ProfilePage />} />
                 <Route path="/admin" element={<AdminPage />} />
               </Route>

@@ -18,21 +18,21 @@ interface SubscriptionData {
   };
 }
 
-interface UserProgress {
-  total_questions_attempted: number;
+interface QuestionSetAccess {
   subject: string;
+  totalSets: number;
+  accessibleSets: number;
+  firstSetFree: boolean;
 }
 
 export function useSubscription() {
   const { user } = useAuth();
   const [subscription, setSubscription] = useState<SubscriptionData | null>(null);
-  const [userProgress, setUserProgress] = useState<UserProgress[]>([]);
+  const [questionSetAccess, setQuestionSetAccess] = useState<Record<string, QuestionSetAccess>>({});
   const [loading, setLoading] = useState(true);
-  const [freeQuestionsUsed, setFreeQuestionsUsed] = useState(0);
   const [isSubscribed, setIsSubscribed] = useState(false);
-  const [canAccessQuestions, setCanAccessQuestions] = useState(true);
 
-  const FREE_QUESTIONS_PER_SUBJECT = 20; // 20 per subject
+  const JAMB_SUBJECTS = ['Mathematics', 'Physics', 'Chemistry', 'Biology', 'English Language'];
 
   useEffect(() => {
     if (user) {
@@ -45,10 +45,8 @@ export function useSubscription() {
 
   const resetState = () => {
     setSubscription(null);
-    setUserProgress([]);
-    setFreeQuestionsUsed(0);
+    setQuestionSetAccess({});
     setIsSubscribed(false);
-    setCanAccessQuestions(true);
   };
 
   const fetchSubscriptionData = async () => {
@@ -72,29 +70,54 @@ export function useSubscription() {
         .eq('status', 'active')
         .maybeSingle();
 
-      // Get user progress to calculate free questions used
-      const { data: progressData } = await supabase
-        .from('user_progress')
-        .select('total_questions_attempted, subject')
-        .eq('user_id', user.id);
-
       setSubscription(subscriptionData);
-      setUserProgress(progressData || []);
       setIsSubscribed(!!subscriptionData);
 
-      // Calculate total free questions used across all subjects
-      const totalUsed = (progressData || []).reduce(
-        (total, progress) => total + progress.total_questions_attempted,
-        0
-      );
-      setFreeQuestionsUsed(totalUsed);
+      // For each subject, get question set access information
+      const accessInfo: Record<string, QuestionSetAccess> = {};
+      
+      for (const subject of JAMB_SUBJECTS) {
+        try {
+          // Get all question sets for this subject
+          const { data: allSets } = await supabase
+            .from('question_sets')
+            .select('id, delivery_date, created_at')
+            .eq('subject', subject)
+            .eq('is_active', true)
+            .order('delivery_date', { ascending: false });
 
-      // For general access, check if user has subscription or hasn't exceeded limits in all subjects
-      const hasExceededAnySubject = (progressData || []).some(
-        progress => progress.total_questions_attempted >= FREE_QUESTIONS_PER_SUBJECT
-      );
-      const canAccess = !!subscriptionData || !hasExceededAnySubject;
-      setCanAccessQuestions(canAccess);
+          // Get user's access to question sets for this subject
+          const { data: userAccess } = await supabase
+            .from('user_question_set_access')
+            .select('question_set_id, can_access')
+            .eq('user_id', user.id)
+            .eq('can_access', true);
+
+          const accessibleSetIds = new Set(userAccess?.map(access => access.question_set_id) || []);
+          const totalSets = allSets?.length || 0;
+          const accessibleSets = userAccess?.length || 0;
+          
+          // First set is always free for each subject
+          const firstSetFree = totalSets > 0;
+
+          accessInfo[subject] = {
+            subject,
+            totalSets,
+            accessibleSets: !!subscriptionData ? totalSets : accessibleSets,
+            firstSetFree
+          };
+        } catch (error) {
+          console.error(`Error fetching access info for ${subject}:`, error);
+          accessInfo[subject] = {
+            subject,
+            totalSets: 0,
+            accessibleSets: 0,
+            firstSetFree: false
+          };
+        }
+      }
+
+      setQuestionSetAccess(accessInfo);
     } catch (error) {
       console.error('Error fetching subscription data:', error);
     } finally {
@@ -106,28 +129,13 @@ export function useSubscription() {
     await fetchSubscriptionData();
   };
 
-  const getRemainingFreeQuestions = (subject?: string) => {
-    if (isSubscribed) return Infinity;
-    
-    if (subject) {
-      // Get remaining questions for specific subject
-      const subjectProgress = userProgress.find(p => p.subject === subject);
-      const used = subjectProgress?.total_questions_attempted || 0;
-      return Math.max(0, FREE_QUESTIONS_PER_SUBJECT - used);
-    }
-    
-    // Get minimum remaining across all subjects for general display
-    const JAMB_SUBJECTS = ['Mathematics', 'Physics', 'Chemistry', 'Biology', 'English Language'];
-    let minRemaining = FREE_QUESTIONS_PER_SUBJECT;
-    
-    for (const subj of JAMB_SUBJECTS) {
-      const subjectProgress = userProgress.find(p => p.subject === subj);
-      const used = subjectProgress?.total_questions_attempted || 0;
-      const remaining = Math.max(0, FREE_QUESTIONS_PER_SUBJECT - used);
-      minRemaining = Math.min(minRemaining, remaining);
-    }
-    
-    return minRemaining;
+  const getQuestionSetAccess = (subject: string) => {
+    return questionSetAccess[subject] || {
+      subject,
+      totalSets: 0,
+      accessibleSets: 0,
+      firstSetFree: false
+    };
   };
 
   const getSubscriptionStatus = (subject?: string) => {
@@ -135,50 +143,60 @@ export function useSubscription() {
     if (isSubscribed) return 'premium';
     
     if (subject) {
-      // Check status for specific subject
-      const subjectProgress = userProgress.find(p => p.subject === subject);
-      const used = subjectProgress?.total_questions_attempted || 0;
-      if (used >= FREE_QUESTIONS_PER_SUBJECT) return 'expired';
-      return 'free';
+      const access = getQuestionSetAccess(subject);
+      if (access.totalSets === 0) return 'no_content';
+      if (access.accessibleSets > 0) return 'free';
+      return 'expired';
     }
     
-    // Check if any subject has exceeded limits for general status
-    const hasExceededAnySubject = userProgress.some(
-      progress => progress.total_questions_attempted >= FREE_QUESTIONS_PER_SUBJECT
+    // Check if user has access to any question sets
+    const hasAnyAccess = Object.values(questionSetAccess).some(
+      access => access.accessibleSets > 0
     );
-    if (hasExceededAnySubject) return 'expired';
-    return 'free';
+    return hasAnyAccess ? 'free' : 'expired';
   };
 
-  const checkQuestionAccess = (subject: string, questionsToAccess: number = 1) => {
-    if (isSubscribed) return { canAccess: true, reason: null };
+  const checkQuestionSetAccess = (subject: string) => {
+    if (isSubscribed) return { canAccess: true, reason: 'subscription' };
     
-    const subjectProgress = userProgress.find(p => p.subject === subject);
-    const used = subjectProgress?.total_questions_attempted || 0;
-    const remaining = Math.max(0, FREE_QUESTIONS_PER_SUBJECT - used);
+    const access = getQuestionSetAccess(subject);
     
-    if (remaining >= questionsToAccess) {
-      return { canAccess: true, reason: null };
+    if (access.accessibleSets > 0) {
+      return { 
+        canAccess: true, 
+        reason: access.accessibleSets === 1 && access.firstSetFree ? 'free_first_set' : 'previously_granted'
+      };
     }
     
     return {
       canAccess: false,
-      reason: 'free_limit_exceeded',
-      message: `You've used all ${FREE_QUESTIONS_PER_SUBJECT} free questions for ${subject}. Subscribe to continue practicing.`
+      reason: 'subscription_required',
+      message: `Subscribe to access question sets for ${subject}. Fresh questions delivered every 3 days at 6 AM Nigerian time.`
+    };
+  };
+
+  const getAvailableQuestionSets = (subject: string) => {
+    const access = getQuestionSetAccess(subject);
+    return {
+      total: access.totalSets,
+      accessible: access.accessibleSets,
+      locked: Math.max(0, access.totalSets - access.accessibleSets)
     };
   };
 
   return {
     subscription,
-    userProgress,
+    questionSetAccess,
     loading,
     isSubscribed,
-    freeQuestionsUsed,
-    canAccessQuestions,
     refreshSubscription,
-    getRemainingFreeQuestions,
+    getQuestionSetAccess,
     getSubscriptionStatus,
-    checkQuestionAccess,
-    FREE_QUESTIONS_PER_SUBJECT
+    checkQuestionSetAccess,
+    getAvailableQuestionSets,
+    // Legacy compatibility (will show question set info instead)
+    freeQuestionsUsed: 0, // No longer applicable
+    canAccessQuestions: true, // Will be determined by question set access
+    FREE_QUESTIONS_PER_SUBJECT: 0 // No longer applicable
   };
 }

@@ -1,21 +1,19 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { X, Lock, Star, ArrowRight } from 'lucide-react';
+import { X, Lock, Star, ArrowRight, Clock } from 'lucide-react';
 
 interface PaywallModalProps {
   isOpen: boolean;
   onClose: () => void;
-  subject: string;
-  freeQuestionsUsed: number;
-  freeQuestionsPerSubject: number;
+  title?: string;
+  description?: string;
 }
 
 export default function PaywallModal({ 
   isOpen, 
   onClose, 
-  subject,
-  freeQuestionsUsed, 
-  freeQuestionsPerSubject 
+  title = "Subscribe for Full Access",
+  description = "Subscribe to access all question sets and get unlimited practice."
 }: PaywallModalProps) {
   if (!isOpen) return null;
 
@@ -42,9 +40,9 @@ export default function PaywallModal({
               <Lock className="h-6 w-6" />
             </div>
             <div>
-              <h2 className="text-lg font-bold">Upgrade to Continue</h2>
+              <h2 className="text-lg font-bold">{title}</h2>
               <p className="text-blue-100 text-sm">
-                You've used all {freeQuestionsPerSubject} free questions for {subject}
+                {description}
               </p>
             </div>
           </div>
@@ -52,39 +50,51 @@ export default function PaywallModal({
 
         {/* Content */}
         <div className="p-6">
-          {/* Progress */}
-          <div className="mb-6">
-            <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
-              <span>{subject} Questions Used</span>
-              <span>{freeQuestionsUsed}/{freeQuestionsPerSubject}</span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div 
-                className="bg-red-500 h-2 rounded-full" 
-                style={{ width: '100%' }}
-              ></div>
+          {/* Automated Delivery Info */}
+          <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+            <div className="flex items-start">
+              <Clock className="h-5 w-5 text-blue-500 mt-0.5 mr-3" />
+              <div>
+                <h4 className="text-sm font-medium text-blue-900 mb-1">
+                  Automated Question Delivery
+                </h4>
+                <p className="text-xs text-blue-700">
+                  Fresh sets of 50 questions delivered every 3 days at 6:00 AM Nigerian time for each subject.
+                </p>
+              </div>
             </div>
           </div>
 
           {/* Benefits */}
           <div className="mb-6">
             <h3 className="font-semibold text-gray-900 mb-3">
-              Upgrade to Premium and get:
+              Premium Subscription Benefits:
             </h3>
             <ul className="space-y-2">
               {[
-                'Unlimited access to all JAMB questions',
-                'New questions every 4 days',
+                'Access to all question sets for every subject',
+                '50 fresh questions delivered every 3 days automatically',
+                'Complete access to question set library',
                 'Detailed explanations for every answer',
                 'Performance analytics and progress tracking',
-                'Mobile and offline access'
+                'Question set management and deletion features'
               ].map((benefit, index) => (
-                <li key={index} className="flex items-center text-sm text-gray-700">
-                  <Star className="h-4 w-4 text-yellow-400 mr-2 flex-shrink-0" />
+                <li key={index} className="flex items-start text-sm text-gray-700">
+                  <Star className="h-4 w-4 text-yellow-400 mr-2 flex-shrink-0 mt-0.5" />
                   {benefit}
                 </li>
               ))}
             </ul>
+          </div>
+
+          {/* Free Access Info */}
+          <div className="mb-6 p-3 bg-green-50 rounded-lg border border-green-200">
+            <h4 className="text-sm font-medium text-green-800 mb-1">
+              Free Access Available
+            </h4>
+            <p className="text-xs text-green-700">
+              The first question set for each subject is completely free. Additional sets require a subscription.
+            </p>
           </div>
 
           {/* CTA Buttons */}
@@ -93,7 +103,7 @@ export default function PaywallModal({
               to="/pricing"
               className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg flex items-center justify-center transition-colors"
             >
-              View Pricing Plans
+              View Subscription Plans
               <ArrowRight className="h-4 w-4 ml-2" />
             </Link>
             
@@ -101,7 +111,7 @@ export default function PaywallModal({
               onClick={onClose}
               className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-lg transition-colors"
             >
-              Continue with Free Account
+              Continue with Free Access
             </button>
           </div>
 

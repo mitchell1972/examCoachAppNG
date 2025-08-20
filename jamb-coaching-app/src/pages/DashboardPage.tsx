@@ -17,7 +17,7 @@ import toast from 'react-hot-toast';
 
 export default function DashboardPage() {
   const { user, profile } = useAuth();
-  const { getRemainingFreeQuestions, getSubscriptionStatus, isSubscribed } = useSubscription();
+  const { getQuestionSetAccess, getSubscriptionStatus, isSubscribed, getAvailableQuestionSets } = useSubscription();
   const [selectedSubject, setSelectedSubject] = useState<string>(JAMB_SUBJECTS[0]);
 
   // Fetch user progress
@@ -66,19 +66,19 @@ export default function DashboardPage() {
   const subjectProgress = React.useMemo(() => {
     return JAMB_SUBJECTS.map(subject => {
       const progress = userProgress.find(p => p.subject === subject);
-      const remaining = getRemainingFreeQuestions(subject);
+      const questionSets = getAvailableQuestionSets(subject);
       const status = getSubscriptionStatus(subject);
       return {
         subject,
         score: progress?.average_score || 0,
         attempted: progress?.total_questions_attempted || 0,
-        remaining,
+        availableQuestionSets: questionSets,
         status,
         weakTopics: progress?.weak_topics || [],
         strongTopics: progress?.strong_topics || []
       };
     });
-  }, [userProgress, getRemainingFreeQuestions, getSubscriptionStatus]);
+  }, [userProgress, getAvailableQuestionSets, getSubscriptionStatus]);
 
   return (
     <div className="space-y-6">
@@ -198,7 +198,7 @@ export default function DashboardPage() {
                       {subject.attempted} questions attempted
                       {!isSubscribed && (
                         <span className={`ml-2 ${subject.status === 'expired' ? 'text-red-600' : 'text-blue-600'}`}>
-                          • {subject.status === 'expired' ? 'No free questions left' : `${subject.remaining}/20 free left`}
+                          • {subject.availableQuestionSets.accessible}/{subject.availableQuestionSets.total} question sets accessible
                         </span>
                       )}
                     </p>

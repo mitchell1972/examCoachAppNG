@@ -11,16 +11,16 @@ import {
   ArrowLeft as ArrowLeftIcon,
   BookOpen as BookOpenIcon
 } from 'lucide-react';
-import { getDailyQuestions, getQuestionsBySubjectAndTopic, submitAnswer, Question } from '../lib/supabase';
+import { getQuestionSetQuestions, submitAnswer, Question } from '../lib/supabase';
 import PaywallModal from '../components/PaywallModal';
 import toast from 'react-hot-toast';
 
 export default function SubjectPage() {
   const { subject } = useParams<{ subject: string }>();
   const [searchParams] = useSearchParams();
-  const topic = searchParams.get('topic');
+  const questionSetId = searchParams.get('question_set_id');
   const { user } = useAuth();
-  const { checkQuestionAccess, freeQuestionsUsed, FREE_QUESTIONS_PER_SUBJECT, refreshSubscription } = useSubscription();
+  const { checkQuestionSetAccess, refreshSubscription } = useSubscription();
   
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState<Record<string, 'A' | 'B' | 'C' | 'D'>>({});
@@ -31,21 +31,14 @@ export default function SubjectPage() {
   const [loading, setLoading] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
 
-  // Fetch questions
+  // Fetch questions from question set
   const { data: questions = [], isLoading } = useQuery({
-    queryKey: ['practiceQuestions', subject, topic],
+    queryKey: ['questionSetQuestions', questionSetId],
     queryFn: () => {
-      if (!subject) return [];
-      
-      // Try daily questions first, then fallback to general questions
-      return getDailyQuestions(subject).then(dailyQuestions => {
-        if (dailyQuestions.length > 0) {
-          return dailyQuestions;
-        }
-        return getQuestionsBySubjectAndTopic(subject, topic || undefined, 20);
-      });
+      if (!questionSetId) throw new Error('Question set ID is required');
+      return getQuestionSetQuestions(questionSetId);
     },
-    enabled: !!subject
+    enabled: !!questionSetId && !!user
   });
 
   const currentQuestion = questions[currentQuestionIndex];
@@ -53,12 +46,12 @@ export default function SubjectPage() {
   // Check access before showing questions
   useEffect(() => {
     if (questions.length > 0 && user && subject) {
-      const access = checkQuestionAccess(subject);
+      const access = checkQuestionSetAccess(subject);
       if (!access.canAccess) {
         setShowPaywall(true);
       }
     }
-  }, [questions, user, subject, checkQuestionAccess]);
+  }, [questions, user, subject, checkQuestionSetAccess]);
 
   // Reset timer when question changes
   useEffect(() => {
@@ -66,10 +59,9 @@ export default function SubjectPage() {
   }, [currentQuestionIndex]);
 
   const handleAnswerSelect = (answer: 'A' | 'B' | 'C' | 'D') => {
-    // Check access before allowing answer selection
     if (!subject) return;
     
-    const access = checkQuestionAccess(subject);
+    const access = checkQuestionSetAccess(subject);
     if (!access.canAccess) {
       setShowPaywall(true);
       return;
@@ -84,10 +76,9 @@ export default function SubjectPage() {
   };
 
   const handleNextQuestion = async () => {
-    // Check access before proceeding
     if (!subject) return;
     
-    const access = checkQuestionAccess(subject);
+    const access = checkQuestionSetAccess(subject);
     if (!access.canAccess) {
       setShowPaywall(true);
       return;
@@ -112,7 +103,7 @@ export default function SubjectPage() {
         [currentQuestion.id]: result.data
       }));
 
-      // Refresh subscription status to update question count
+      // Refresh subscription status to update question set access
       refreshSubscription();
 
       if (currentQuestionIndex < questions.length - 1) {
@@ -146,6 +137,26 @@ export default function SubjectPage() {
     };
   };
 
+  if (!questionSetId) {
+    return (
+      <div className="text-center py-12">
+        <BookOpenIcon className="mx-auto h-12 w-12 text-gray-400" />
+        <h3 className="mt-2 text-sm font-medium text-gray-900">No question set selected</h3>
+        <p className="mt-1 text-sm text-gray-500">
+          Please select a question set to start practicing.
+        </p>
+        <div className="mt-6">
+          <button
+            onClick={() => window.history.back()}
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+          >
+            Back to Question Sets
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -163,8 +174,16 @@ export default function SubjectPage() {
         <BookOpenIcon className="mx-auto h-12 w-12 text-gray-400" />
         <h3 className="mt-2 text-sm font-medium text-gray-900">No questions available</h3>
         <p className="mt-1 text-sm text-gray-500">
-          No questions found for {subject} {topic && `- ${topic}`}. Please try a different subject or topic.
+          No questions found in this question set. Please try a different set.
         </p>
+        <div className="mt-6">
+          <button
+            onClick={() => window.history.back()}
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+          >
+            Back to Question Sets
+          </button>
+        </div>
       </div>
     );
   }
@@ -286,7 +305,7 @@ export default function SubjectPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">{subject}</h1>
-            {topic && <p className="text-gray-600">{topic}</p>}
+            <p className="text-gray-600">Question Set Practice</p>
           </div>
           <div className="flex items-center space-x-4 text-sm text-gray-500">
             <div className="flex items-center">
@@ -385,9 +404,8 @@ export default function SubjectPage() {
       <PaywallModal
         isOpen={showPaywall}
         onClose={() => setShowPaywall(false)}
-        subject={subject || ''}
-        freeQuestionsUsed={freeQuestionsUsed}
-        freeQuestionsPerSubject={FREE_QUESTIONS_PER_SUBJECT}
+        title="Subscribe for Full Access"
+        description={`Subscribe to access all question sets for ${subject}. Get 50 fresh questions delivered every 3 days automatically.`}
       />
     </div>
   );
