@@ -77,7 +77,8 @@ Ensure all questions:
                         role: 'user',
                         content: prompt
                     }],
-                    response_format: { type: 'json_object' }
+                    max_tokens: 2000,
+                    temperature: 0.7
                 })
             });
 
@@ -93,17 +94,27 @@ Ensure all questions:
                     } else if (Array.isArray(parsed)) {
                         questions = parsed;
                     } else {
-                        console.log('Unexpected response format from AI');
+                        console.log('Unexpected response format from AI, using fallback');
+                        // Try extracting questions from any nested structure
+                        const questionsArray = extractQuestionsFromResponse(parsed);
+                        if (questionsArray.length > 0) {
+                            questions = questionsArray;
+                        }
                     }
                 } catch (e) {
+                    console.log('JSON parse error, trying text extraction:', e.message);
                     // Fallback: try to extract JSON array from response
                     const jsonMatch = generatedText.match(/\[\s*{[\s\S]*}\s*\]/);
                     if (jsonMatch) {
-                        questions = JSON.parse(jsonMatch[0]);
-                    } else {
-                        console.log('Could not parse AI response as JSON');
+                        try {
+                            questions = JSON.parse(jsonMatch[0]);
+                        } catch (parseError) {
+                            console.log('Fallback parse also failed, using mock data');
+                        }
                     }
                 }
+            } else {
+                console.log('DeepSeek API error:', deepseekResponse.status, deepseekResponse.statusText);
             }
         }
 
@@ -193,6 +204,28 @@ Ensure all questions:
         });
     }
 });
+
+// Helper function to extract questions from various response formats
+function extractQuestionsFromResponse(response: any): any[] {
+    // Check for different possible structures
+    if (response.data && Array.isArray(response.data)) {
+        return response.data;
+    }
+    if (response.questions && Array.isArray(response.questions)) {
+        return response.questions;
+    }
+    if (response.items && Array.isArray(response.items)) {
+        return response.items;
+    }
+    if (Array.isArray(response)) {
+        return response;
+    }
+    // If response is a single question object, wrap it in an array
+    if (response.question_text) {
+        return [response];
+    }
+    return [];
+}
 
 // Mock question generator for when AI is not available
 function generateMockQuestions(subject: string, topic: string, difficulty: number, count: number) {
