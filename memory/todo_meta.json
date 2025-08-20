@@ -10,8 +10,8 @@
       },
       "2": {
         "id": "2",
-        "content": "Set up Stripe subscription infrastructure",
-        "details": "1. Initialize Stripe subscription template in Supabase. 2. Create subscription tables (subscriptions, payments, plans). 3. Deploy Stripe payment Edge Functions",
+        "content": "Set up Paystack subscription infrastructure",
+        "details": "1. Create Paystack subscription integration with Supabase. 2. Build custom subscription tables for Paystack. 3. Deploy Paystack payment Edge Functions with webhook handling",
         "status": "pending",
         "priority": "high"
       },
