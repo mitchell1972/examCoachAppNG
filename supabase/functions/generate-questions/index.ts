@@ -28,7 +28,19 @@ Deno.serve(async (req) => {
         // Check if Gemini API key is available
         if (geminiApiKey) {
             // Use Gemini AI to generate questions
-            const prompt = `Generate ${count} multiple-choice questions for JAMB ${subject} on the topic "${topic}" with difficulty level ${difficulty_level} (1=easy, 2=medium, 3=hard). 
+            const prompt = `Generate ${count} multiple-choice questions for JAMB ${subject} on the topic "${topic}" with difficulty level ${difficulty_level} (1=easy, 2=medium, 3=hard).
+
+IMPORTANT REQUIREMENTS - MUST FOLLOW NIGERIAN JAMB SYLLABUS:
+
+**For Mathematics:** Follow the JAMB Mathematics syllabus covering Number and Numeration, Algebraic Processes, Geometry and Trigonometry, Calculus, and Statistics. Use Nigerian context where applicable.
+
+**For Physics:** Align with JAMB Physics syllabus including Mechanics, Thermal Physics, Waves and Sound, Light, Electricity and Magnetism, Modern Physics, and Space Physics. Use metric units and Nigerian examples.
+
+**For Chemistry:** Follow JAMB Chemistry syllabus covering Separation of Mixtures, Atomic Structure, Chemical Bonding, Air, Water, Solids and Solutions, Acids/Bases/Salts, Oxidation and Reduction, Hydrocarbons, and Petrochemicals relevant to Nigeria.
+
+**For Biology:** Align with JAMB Biology syllabus including Cell Biology, Evolution, Genetics, Ecology (with Nigerian ecosystems), Diversity of Living Things, and Applied Biology relevant to Nigerian agriculture and health.
+
+**For English Language:** Follow JAMB English syllabus covering Comprehension, Lexis and Structure, Oral Forms, and Written Forms using Nigerian English context and examples.
 
 Format the response as a JSON array with this exact structure:
 [
@@ -43,7 +55,13 @@ Format the response as a JSON array with this exact structure:
   }
 ]
 
-Ensure questions follow JAMB standards and Nigerian curriculum.`;
+Ensure all questions:
+- Follow current JAMB examination standards and format
+- Use appropriate Nigerian context and examples
+- Match the specified difficulty level
+- Include comprehensive explanations
+- Use proper grammar and clear language
+- Cover core syllabus areas for the subject`;
 
             const geminiResponse = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=' + geminiApiKey, {
                 method: 'POST',
