@@ -3,38 +3,38 @@
     "Coordinator": {
       "1": {
         "id": "1",
-        "content": "Research JAMB exam structure and requirements",
-        "details": "1. Research JAMB exam format and question types for each subject (Math, Physics, Chemistry, Biology, English). 2. Analyze current JAMB preparation apps and best practices. 3. Define question difficulty levels and scoring systems. 4. Research security requirements for educational apps in Nigeria.",
-        "status": "completed",
+        "content": "Research current USD to Naira exchange rate for accurate pricing",
+        "details": "Convert 2500 NGN to USD equivalent for Stripe subscription pricing",
+        "status": "pending",
         "priority": "high"
       },
       "2": {
         "id": "2",
-        "content": "Design app architecture and security framework",
-        "details": "1. Design secure user authentication system. 2. Plan question database structure with daily rotation logic. 3. Define API security measures and data encryption. 4. Design offline capabilities and data synchronization. 5. Plan user progress tracking and analytics.",
-        "status": "completed",
+        "content": "Set up Stripe subscription infrastructure",
+        "details": "1. Initialize Stripe subscription template in Supabase. 2. Create subscription tables (subscriptions, payments, plans). 3. Deploy Stripe payment Edge Functions",
+        "status": "pending",
         "priority": "high"
       },
       "3": {
         "id": "3",
-        "content": "Address Android app development approach",
-        "details": "1. Clarify with user the preferred approach: native Android app vs Progressive Web App (PWA). 2. If native Android is required, provide complete code and deployment guide. 3. If PWA is acceptable, build a mobile-optimized web app that works like a native app.",
-        "status": "completed",
+        "content": "Implement freemium access control",
+        "details": "1. Create access control logic for free vs premium content. 2. Allow first set of questions (100 questions) free. 3. Gate subsequent question sets behind subscription",
+        "status": "pending",
         "priority": "high"
       },
       "4": {
         "id": "4",
-        "content": "Build AI-powered JAMB coaching PWA",
-        "details": "Build complete Progressive Web App with Supabase backend including: 1. AI question generation and management system 2. Student learning interface with daily questions (20 per subject every 3 days) 3. Admin dashboard for question management 4. Secure authentication and data protection 5. Offline capabilities and PWA features 6. Performance analytics and personalized learning 7. All 5 subjects: Math, Physics, Chemistry, Biology, English",
-        "status": "completed",
-        "priority": "high"
+        "content": "Build subscription management UI",
+        "details": "1. Add subscription status to user dashboard. 2. Create payment/billing interface. 3. Add subscription upgrade prompts. 4. Build subscription management page",
+        "status": "pending",
+        "priority": "medium"
       },
       "5": {
         "id": "5",
-        "content": "Test and deploy the application",
-        "details": "1. Conduct comprehensive testing of all features. 2. Test security measures and data protection. 3. Verify daily question rotation logic. 4. Deploy the application (or provide deployment instructions). 5. Create user documentation and setup guide.",
-        "status": "in_progress",
-        "priority": "high"
+        "content": "Test and deploy subscription system",
+        "details": "1. Test payment flows with Stripe test mode. 2. Verify access control logic. 3. Deploy to production. 4. Provide admin tools for subscription management",
+        "status": "pending",
+        "priority": "medium"
       }
     }
   }
