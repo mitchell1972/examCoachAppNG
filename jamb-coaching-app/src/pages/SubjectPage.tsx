@@ -20,7 +20,7 @@ export default function SubjectPage() {
   const [searchParams] = useSearchParams();
   const topic = searchParams.get('topic');
   const { user } = useAuth();
-  const { checkQuestionAccess, freeQuestionsUsed, FREE_QUESTIONS_LIMIT, refreshSubscription } = useSubscription();
+  const { checkQuestionAccess, freeQuestionsUsed, FREE_QUESTIONS_PER_SUBJECT, refreshSubscription } = useSubscription();
   
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState<Record<string, 'A' | 'B' | 'C' | 'D'>>({});
@@ -52,13 +52,13 @@ export default function SubjectPage() {
 
   // Check access before showing questions
   useEffect(() => {
-    if (questions.length > 0 && user) {
-      const access = checkQuestionAccess();
+    if (questions.length > 0 && user && subject) {
+      const access = checkQuestionAccess(subject);
       if (!access.canAccess) {
         setShowPaywall(true);
       }
     }
-  }, [questions, user, checkQuestionAccess]);
+  }, [questions, user, subject, checkQuestionAccess]);
 
   // Reset timer when question changes
   useEffect(() => {
@@ -67,7 +67,9 @@ export default function SubjectPage() {
 
   const handleAnswerSelect = (answer: 'A' | 'B' | 'C' | 'D') => {
     // Check access before allowing answer selection
-    const access = checkQuestionAccess();
+    if (!subject) return;
+    
+    const access = checkQuestionAccess(subject);
     if (!access.canAccess) {
       setShowPaywall(true);
       return;
@@ -83,7 +85,9 @@ export default function SubjectPage() {
 
   const handleNextQuestion = async () => {
     // Check access before proceeding
-    const access = checkQuestionAccess();
+    if (!subject) return;
+    
+    const access = checkQuestionAccess(subject);
     if (!access.canAccess) {
       setShowPaywall(true);
       return;
@@ -381,8 +385,9 @@ export default function SubjectPage() {
       <PaywallModal
         isOpen={showPaywall}
         onClose={() => setShowPaywall(false)}
+        subject={subject || ''}
         freeQuestionsUsed={freeQuestionsUsed}
-        totalFreeQuestions={FREE_QUESTIONS_LIMIT}
+        freeQuestionsPerSubject={FREE_QUESTIONS_PER_SUBJECT}
       />
     </div>
   );

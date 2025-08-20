@@ -32,7 +32,7 @@ export function useSubscription() {
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [canAccessQuestions, setCanAccessQuestions] = useState(true);
 
-  const FREE_QUESTIONS_LIMIT = 25; // 5 per subject
+  const FREE_QUESTIONS_PER_SUBJECT = 20; // 20 per subject
 
   useEffect(() => {
     if (user) {
@@ -82,15 +82,18 @@ export function useSubscription() {
       setUserProgress(progressData || []);
       setIsSubscribed(!!subscriptionData);
 
-      // Calculate total free questions used
+      // Calculate total free questions used across all subjects
       const totalUsed = (progressData || []).reduce(
         (total, progress) => total + progress.total_questions_attempted,
         0
       );
       setFreeQuestionsUsed(totalUsed);
 
-      // Determine if user can access questions
-      const canAccess = !!subscriptionData || totalUsed < FREE_QUESTIONS_LIMIT;
+      // For general access, check if user has subscription or hasn't exceeded limits in all subjects
+      const hasExceededAnySubject = (progressData || []).some(
+        progress => progress.total_questions_attempted >= FREE_QUESTIONS_PER_SUBJECT
+      );
+      const canAccess = !!subscriptionData || !hasExceededAnySubject;
       setCanAccessQuestions(canAccess);
     } catch (error) {
       console.error('Error fetching subscription data:', error);
@@ -103,22 +106,57 @@ export function useSubscription() {
     await fetchSubscriptionData();
   };
 
-  const getRemainingFreeQuestions = () => {
+  const getRemainingFreeQuestions = (subject?: string) => {
     if (isSubscribed) return Infinity;
-    return Math.max(0, FREE_QUESTIONS_LIMIT - freeQuestionsUsed);
+    
+    if (subject) {
+      // Get remaining questions for specific subject
+      const subjectProgress = userProgress.find(p => p.subject === subject);
+      const used = subjectProgress?.total_questions_attempted || 0;
+      return Math.max(0, FREE_QUESTIONS_PER_SUBJECT - used);
+    }
+    
+    // Get minimum remaining across all subjects for general display
+    const JAMB_SUBJECTS = ['Mathematics', 'Physics', 'Chemistry', 'Biology', 'English Language'];
+    let minRemaining = FREE_QUESTIONS_PER_SUBJECT;
+    
+    for (const subj of JAMB_SUBJECTS) {
+      const subjectProgress = userProgress.find(p => p.subject === subj);
+      const used = subjectProgress?.total_questions_attempted || 0;
+      const remaining = Math.max(0, FREE_QUESTIONS_PER_SUBJECT - used);
+      minRemaining = Math.min(minRemaining, remaining);
+    }
+    
+    return minRemaining;
   };
 
-  const getSubscriptionStatus = () => {
+  const getSubscriptionStatus = (subject?: string) => {
     if (loading) return 'loading';
     if (isSubscribed) return 'premium';
-    if (freeQuestionsUsed >= FREE_QUESTIONS_LIMIT) return 'expired';
+    
+    if (subject) {
+      // Check status for specific subject
+      const subjectProgress = userProgress.find(p => p.subject === subject);
+      const used = subjectProgress?.total_questions_attempted || 0;
+      if (used >= FREE_QUESTIONS_PER_SUBJECT) return 'expired';
+      return 'free';
+    }
+    
+    // Check if any subject has exceeded limits for general status
+    const hasExceededAnySubject = userProgress.some(
+      progress => progress.total_questions_attempted >= FREE_QUESTIONS_PER_SUBJECT
+    );
+    if (hasExceededAnySubject) return 'expired';
     return 'free';
   };
 
-  const checkQuestionAccess = (questionsToAccess: number = 1) => {
+  const checkQuestionAccess = (subject: string, questionsToAccess: number = 1) => {
     if (isSubscribed) return { canAccess: true, reason: null };
     
-    const remaining = getRemainingFreeQuestions();
+    const subjectProgress = userProgress.find(p => p.subject === subject);
+    const used = subjectProgress?.total_questions_attempted || 0;
+    const remaining = Math.max(0, FREE_QUESTIONS_PER_SUBJECT - used);
+    
     if (remaining >= questionsToAccess) {
       return { canAccess: true, reason: null };
     }
@@ -126,7 +164,7 @@ export function useSubscription() {
     return {
       canAccess: false,
       reason: 'free_limit_exceeded',
-      message: 'You\'ve used all your free questions. Subscribe to continue practicing.'
+      message: `You've used all ${FREE_QUESTIONS_PER_SUBJECT} free questions for ${subject}. Subscribe to continue practicing.`
     };
   };
 
@@ -141,6 +179,6 @@ export function useSubscription() {
     getRemainingFreeQuestions,
     getSubscriptionStatus,
     checkQuestionAccess,
-    FREE_QUESTIONS_LIMIT
+    FREE_QUESTIONS_PER_SUBJECT
   };
 }

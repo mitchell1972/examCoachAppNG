@@ -3,52 +3,31 @@
     "Coordinator": {
       "1": {
         "id": "1",
-        "content": "Store Stripe API keys securely in Supabase",
-        "details": "Add STRIPE_SECRET_KEY and STRIPE_PUBLISHABLE_KEY as environment variables in the Supabase project secrets vault",
+        "content": "Update subscription system to enforce per-subject free limits",
+        "details": "Modify useSubscription hook to track 20 free questions per subject instead of 25 total questions across all subjects. Update logic to check per-subject limits and block access when exceeded.",
         "status": "completed",
         "priority": "high"
       },
       "2": {
         "id": "2",
-        "content": "Update database schema for subscription management",
-        "details": "Add subscription_status, subscription_id, customer_id fields to user profiles. Create subscription tracking tables.",
+        "content": "Update PaywallModal and SubscriptionBadge components",
+        "details": "Modify components to display per-subject question limits and remaining counts. Show which specific subject has reached its limit.",
         "status": "completed",
         "priority": "high"
       },
       "3": {
         "id": "3",
-        "content": "Create Stripe webhook handler Edge Function",
-        "details": "Build Edge Function to handle Stripe webhooks (payment success, subscription events) and update user subscription status in database",
+        "content": "Ensure strict paywall enforcement",
+        "details": "Verify that all practice features are completely blocked when free limits are exceeded, requiring subscription to continue.",
         "status": "completed",
         "priority": "high"
       },
       "4": {
         "id": "4",
-        "content": "Build subscription management Edge Functions",
-        "details": "Create Edge Functions for: creating customers, creating subscriptions, checking subscription status",
+        "content": "Test and deploy the updated subscription limits",
+        "details": "Build and deploy the updated app with new per-subject limits, then test to ensure proper enforcement.",
         "status": "completed",
         "priority": "high"
-      },
-      "5": {
-        "id": "5",
-        "content": "Create pricing page frontend",
-        "details": "Build responsive pricing page showing ₦3,700/month and ₦40,000/year options with subscribe buttons",
-        "status": "completed",
-        "priority": "medium"
-      },
-      "6": {
-        "id": "6",
-        "content": "Implement paywall system",
-        "details": "Add subscription checks to question access. Free users get first set of questions, then must subscribe for continued access",
-        "status": "completed",
-        "priority": "medium"
-      },
-      "7": {
-        "id": "7",
-        "content": "Test subscription flow end-to-end",
-        "details": "Test: payment processing, webhook handling, subscription status updates, paywall functionality",
-        "status": "pending",
-        "priority": "medium"
       }
     }
   }

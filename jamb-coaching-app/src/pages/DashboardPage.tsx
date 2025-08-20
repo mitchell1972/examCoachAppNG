@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useSubscription } from '../hooks/useSubscription';
 import { useQuery } from '@tanstack/react-query';
 import {
   BookOpen as BookOpenIcon,
@@ -8,13 +9,15 @@ import {
   Clock as ClockIcon,
   BarChart3 as ChartBarIcon,
   Flame as FireIcon,
-  Calendar as CalendarIcon
+  Calendar as CalendarIcon,
+  Lock as LockIcon
 } from 'lucide-react';
 import { getUserProgress, analyzePerformance, getDailyQuestions, JAMB_SUBJECTS } from '../lib/supabase';
 import toast from 'react-hot-toast';
 
 export default function DashboardPage() {
   const { user, profile } = useAuth();
+  const { getRemainingFreeQuestions, getSubscriptionStatus, isSubscribed } = useSubscription();
   const [selectedSubject, setSelectedSubject] = useState<string>(JAMB_SUBJECTS[0]);
 
   // Fetch user progress
@@ -63,15 +66,19 @@ export default function DashboardPage() {
   const subjectProgress = React.useMemo(() => {
     return JAMB_SUBJECTS.map(subject => {
       const progress = userProgress.find(p => p.subject === subject);
+      const remaining = getRemainingFreeQuestions(subject);
+      const status = getSubscriptionStatus(subject);
       return {
         subject,
         score: progress?.average_score || 0,
         attempted: progress?.total_questions_attempted || 0,
+        remaining,
+        status,
         weakTopics: progress?.weak_topics || [],
         strongTopics: progress?.strong_topics || []
       };
     });
-  }, [userProgress]);
+  }, [userProgress, getRemainingFreeQuestions, getSubscriptionStatus]);
 
   return (
     <div className="space-y-6">
@@ -179,12 +186,21 @@ export default function DashboardPage() {
               <div key={subject.subject} className="flex items-center justify-between p-4 border rounded-lg">
                 <div className="flex items-center space-x-4">
                   <div className="flex-shrink-0">
-                    <BookOpenIcon className="h-6 w-6 text-gray-400" />
+                    {subject.status === 'expired' && !isSubscribed ? (
+                      <LockIcon className="h-6 w-6 text-red-400" />
+                    ) : (
+                      <BookOpenIcon className="h-6 w-6 text-gray-400" />
+                    )}
                   </div>
                   <div>
                     <h4 className="text-sm font-medium text-gray-900">{subject.subject}</h4>
                     <p className="text-sm text-gray-500">
                       {subject.attempted} questions attempted
+                      {!isSubscribed && (
+                        <span className={`ml-2 ${subject.status === 'expired' ? 'text-red-600' : 'text-blue-600'}`}>
+                          • {subject.status === 'expired' ? 'No free questions left' : `${subject.remaining}/20 free left`}
+                        </span>
+                      )}
                     </p>
                   </div>
                 </div>
@@ -200,12 +216,21 @@ export default function DashboardPage() {
                       ></div>
                     </div>
                   </div>
-                  <Link
-                    to={`/subject/${encodeURIComponent(subject.subject)}`}
-                    className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200"
-                  >
-                    Practice
-                  </Link>
+                  {subject.status === 'expired' && !isSubscribed ? (
+                    <Link
+                      to="/pricing"
+                      className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700"
+                    >
+                      Upgrade
+                    </Link>
+                  ) : (
+                    <Link
+                      to={`/subject/${encodeURIComponent(subject.subject)}`}
+                      className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200"
+                    >
+                      Practice
+                    </Link>
+                  )}
                 </div>
               </div>
             ))}

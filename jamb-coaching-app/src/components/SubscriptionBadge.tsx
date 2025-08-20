@@ -1,9 +1,11 @@
 import React from 'react';
 import { Crown, Clock } from 'lucide-react';
 import { useSubscription } from '../hooks/useSubscription';
+import { useParams } from 'react-router-dom';
 
 export default function SubscriptionBadge() {
   const { getSubscriptionStatus, getRemainingFreeQuestions, loading } = useSubscription();
+  const { subject } = useParams<{ subject: string }>();
 
   if (loading) {
     return (
@@ -14,8 +16,8 @@ export default function SubscriptionBadge() {
     );
   }
 
-  const status = getSubscriptionStatus();
-  const remaining = getRemainingFreeQuestions();
+  const status = getSubscriptionStatus(subject);
+  const remaining = getRemainingFreeQuestions(subject);
 
   switch (status) {
     case 'premium':
@@ -30,7 +32,9 @@ export default function SubscriptionBadge() {
       return (
         <div className="flex items-center px-2 py-1 rounded-full bg-blue-100 text-blue-800">
           <Clock className="h-3 w-3 mr-1" />
-          <span className="text-xs font-medium">{remaining} left</span>
+          <span className="text-xs font-medium">
+            {subject ? `${remaining}/20` : `${remaining} left`}
+          </span>
         </div>
       );
     

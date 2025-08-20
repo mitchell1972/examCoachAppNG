@@ -173,7 +173,7 @@ export default function PricingPage() {
             <div className="text-center">
               <h3 className="text-lg font-medium text-blue-900">Free Tier</h3>
               <p className="text-blue-700 mt-1">
-                Get started with 25 free questions (5 per subject) to experience our platform
+                Get started with 100 free questions (20 per subject) to experience our platform
               </p>
             </div>
           </div>

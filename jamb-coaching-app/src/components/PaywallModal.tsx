@@ -5,15 +5,17 @@ import { X, Lock, Star, ArrowRight } from 'lucide-react';
 interface PaywallModalProps {
   isOpen: boolean;
   onClose: () => void;
+  subject: string;
   freeQuestionsUsed: number;
-  totalFreeQuestions: number;
+  freeQuestionsPerSubject: number;
 }
 
 export default function PaywallModal({ 
   isOpen, 
   onClose, 
+  subject,
   freeQuestionsUsed, 
-  totalFreeQuestions 
+  freeQuestionsPerSubject 
 }: PaywallModalProps) {
   if (!isOpen) return null;
 
@@ -42,7 +44,7 @@ export default function PaywallModal({
             <div>
               <h2 className="text-lg font-bold">Upgrade to Continue</h2>
               <p className="text-blue-100 text-sm">
-                You've used all {totalFreeQuestions} free questions
+                You've used all {freeQuestionsPerSubject} free questions for {subject}
               </p>
             </div>
           </div>
@@ -53,8 +55,8 @@ export default function PaywallModal({
           {/* Progress */}
           <div className="mb-6">
             <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
-              <span>Free Questions Used</span>
-              <span>{freeQuestionsUsed}/{totalFreeQuestions}</span>
+              <span>{subject} Questions Used</span>
+              <span>{freeQuestionsUsed}/{freeQuestionsPerSubject}</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
               <div 

@@ -65,7 +65,7 @@ export default function PracticePage() {
             ) : subscriptionStatus === 'free' ? (
               <div className="flex items-center px-4 py-2 bg-blue-100 text-blue-800 rounded-full">
                 <ClockIcon className="h-5 w-5 mr-2" />
-                <span className="font-medium">{remainingQuestions} Free Questions Remaining</span>
+                <span className="font-medium">{remainingQuestions} Free Questions Remaining (Min Across Subjects)</span>
               </div>
             ) : (
               <div className="flex items-center px-4 py-2 bg-red-100 text-red-800 rounded-full">
