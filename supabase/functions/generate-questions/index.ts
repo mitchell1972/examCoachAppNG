@@ -19,15 +19,15 @@ Deno.serve(async (req) => {
         }
 
         // Get environment variables
-        const geminiApiKey = Deno.env.get('GEMINI_API_KEY');
+        const deepseekApiKey = Deno.env.get('DEEPSEEK_API_KEY');
         const supabaseUrl = Deno.env.get('SUPABASE_URL');
         const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
         let questions = [];
 
-        // Check if Gemini API key is available
-        if (geminiApiKey) {
-            // Use Gemini AI to generate questions
+        // Check if DeepSeek API key is available
+        if (deepseekApiKey) {
+            // Use DeepSeek AI to generate questions
             const prompt = `Generate ${count} multiple-choice questions for JAMB ${subject} on the topic "${topic}" with difficulty level ${difficulty_level} (1=easy, 2=medium, 3=hard).
 
 IMPORTANT REQUIREMENTS - MUST FOLLOW NIGERIAN JAMB SYLLABUS:
@@ -42,18 +42,20 @@ IMPORTANT REQUIREMENTS - MUST FOLLOW NIGERIAN JAMB SYLLABUS:
 
 **For English Language:** Follow JAMB English syllabus covering Comprehension, Lexis and Structure, Oral Forms, and Written Forms using Nigerian English context and examples.
 
-Format the response as a JSON array with this exact structure:
-[
-  {
-    "question_text": "Question text here",
-    "option_a": "Option A text",
-    "option_b": "Option B text", 
-    "option_c": "Option C text",
-    "option_d": "Option D text",
-    "correct_answer": "A",
-    "explanation": "Detailed explanation of the correct answer"
-  }
-]
+RETURN ONLY VALID JSON with this exact structure:
+{
+  "questions": [
+    {
+      "question_text": "Question text here",
+      "option_a": "Option A text",
+      "option_b": "Option B text", 
+      "option_c": "Option C text",
+      "option_d": "Option D text",
+      "correct_answer": "A",
+      "explanation": "Detailed explanation of the correct answer"
+    }
+  ]
+}
 
 Ensure all questions:
 - Follow current JAMB examination standards and format
@@ -63,26 +65,44 @@ Ensure all questions:
 - Use proper grammar and clear language
 - Cover core syllabus areas for the subject`;
 
-            const geminiResponse = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=' + geminiApiKey, {
+            const deepseekResponse = await fetch('https://api.deepseek.com/chat/completions', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${deepseekApiKey}`
                 },
                 body: JSON.stringify({
-                    contents: [{
-                        parts: [{ text: prompt }]
-                    }]
+                    model: 'deepseek-chat',
+                    messages: [{
+                        role: 'user',
+                        content: prompt
+                    }],
+                    response_format: { type: 'json_object' }
                 })
             });
 
-            if (geminiResponse.ok) {
-                const geminiData = await geminiResponse.json();
-                const generatedText = geminiData.candidates[0].content.parts[0].text;
+            if (deepseekResponse.ok) {
+                const deepseekData = await deepseekResponse.json();
+                const generatedText = deepseekData.choices[0].message.content;
                 
-                // Extract JSON from the response
-                const jsonMatch = generatedText.match(/\[\s*{[\s\S]*}\s*\]/);
-                if (jsonMatch) {
-                    questions = JSON.parse(jsonMatch[0]);
+                // Parse JSON response
+                try {
+                    const parsed = JSON.parse(generatedText);
+                    if (parsed.questions && Array.isArray(parsed.questions)) {
+                        questions = parsed.questions;
+                    } else if (Array.isArray(parsed)) {
+                        questions = parsed;
+                    } else {
+                        console.log('Unexpected response format from AI');
+                    }
+                } catch (e) {
+                    // Fallback: try to extract JSON array from response
+                    const jsonMatch = generatedText.match(/\[\s*{[\s\S]*}\s*\]/);
+                    if (jsonMatch) {
+                        questions = JSON.parse(jsonMatch[0]);
+                    } else {
+                        console.log('Could not parse AI response as JSON');
+                    }
                 }
             }
         }
@@ -106,7 +126,7 @@ Ensure all questions:
                 option_d: q.option_d,
                 correct_answer: q.correct_answer,
                 explanation: q.explanation,
-                source: geminiApiKey ? 'AI-generated' : 'Mock-data',
+                source: deepseekApiKey ? 'AI-generated' : 'Mock-data',
                 created_by: null // System generated
             };
 
@@ -140,9 +160,9 @@ Ensure all questions:
                     content_type: 'questions',
                     subject,
                     topic,
-                    prompt_used: geminiApiKey ? 'Gemini AI prompt' : 'Mock data generation',
+                    prompt_used: deepseekApiKey ? 'DeepSeek AI prompt' : 'Mock data generation',
                     generated_content: { questions: savedQuestions },
-                    quality_score: geminiApiKey ? 0.9 : 0.7
+                    quality_score: deepseekApiKey ? 0.9 : 0.7
                 })
             });
         }
@@ -150,7 +170,7 @@ Ensure all questions:
         return new Response(JSON.stringify({
             data: {
                 questions: savedQuestions,
-                source: geminiApiKey ? 'AI-generated' : 'mock-data',
+                source: deepseekApiKey ? 'AI-generated' : 'mock-data',
                 count: savedQuestions.length
             }
         }), {

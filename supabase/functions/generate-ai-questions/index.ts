@@ -12,11 +12,11 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const geminiApiKey = Deno.env.get('GEMINI_API_KEY');
+    const deepseekApiKey = Deno.env.get('DEEPSEEK_API_KEY');
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
-    if (!geminiApiKey || !supabaseUrl || !supabaseServiceKey) {
+    if (!deepseekApiKey || !supabaseUrl || !supabaseServiceKey) {
       throw new Error('Missing required environment variables');
     }
 
@@ -57,45 +57,77 @@ Requirements:
       - Questions should be at JAMB difficulty level
       - Cover different topics from the syllabus
       
-Format each question as JSON:
-      {
-        "question": "question text",
-        "option_a": "first option",
-        "option_b": "second option", 
-        "option_c": "third option",
-        "option_d": "fourth option",
-        "correct_answer": "A|B|C|D",
-        "explanation": "brief explanation"
-      }
-      
-Return only a JSON array of ${questionsPerSubject} questions.`;
+RETURN ONLY VALID JSON with this exact structure:
+{
+  "questions": [
+    {
+      "question": "question text",
+      "option_a": "first option",
+      "option_b": "second option", 
+      "option_c": "third option",
+      "option_d": "fourth option",
+      "correct_answer": "A",
+      "explanation": "brief explanation"
+    }
+  ]
+}
+
+Generate exactly ${questionsPerSubject} questions in the array.`;
 
       try {
-        const geminiResponse = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${geminiApiKey}`,
+        const deepseekResponse = await fetch(
+          'https://api.deepseek.com/chat/completions',
           {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
+              'Authorization': `Bearer ${deepseekApiKey}`
             },
             body: JSON.stringify({
-              contents: [{
-                parts: [{ text: prompt }]
-              }]
+              model: 'deepseek-chat',
+              messages: [{
+                role: 'user',
+                content: prompt
+              }],
+              response_format: { type: 'json_object' }
             })
           }
         );
 
-        if (!geminiResponse.ok) {
-          throw new Error(`Gemini API error: ${geminiResponse.status}`);
+        if (!deepseekResponse.ok) {
+          throw new Error(`DeepSeek API error: ${deepseekResponse.status}`);
         }
 
-        const geminiData = await geminiResponse.json();
-        const generatedText = geminiData.candidates[0].content.parts[0].text;
+        const deepseekData = await deepseekResponse.json();
+        const generatedText = deepseekData.choices[0].message.content;
         
-        // Clean and parse JSON
-        const cleanedText = generatedText.replace(/```json|```/g, '').trim();
-        const questions = JSON.parse(cleanedText);
+        // Parse and clean JSON response
+        let questions = [];
+        try {
+          const parsed = JSON.parse(generatedText);
+          if (parsed.questions && Array.isArray(parsed.questions)) {
+            questions = parsed.questions;
+          } else if (Array.isArray(parsed)) {
+            questions = parsed;
+          } else {
+            console.log('Unexpected response format from AI for', subject);
+          }
+        } catch (parseError) {
+          // Fallback: clean and parse JSON
+          const cleanedText = generatedText.replace(/```json|```/g, '').trim();
+          try {
+            const parsed = JSON.parse(cleanedText);
+            questions = parsed.questions || parsed;
+          } catch (e) {
+            console.log('Could not parse AI response as JSON for', subject);
+          }
+        }
+
+        // Only process if we have questions
+        if (questions.length === 0) {
+          console.log(`No questions generated for ${subject}, skipping...`);
+          continue;
+        }
 
         // Insert questions into database
         const questionsToInsert = questions.map((q: any) => ({
