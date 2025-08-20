@@ -5,7 +5,7 @@
         "id": "1",
         "content": "Research current USD to Naira exchange rate for accurate pricing",
         "details": "Convert 2500 NGN to USD equivalent for Stripe subscription pricing",
-        "status": "pending",
+        "status": "completed",
         "priority": "high"
       },
       "2": {
