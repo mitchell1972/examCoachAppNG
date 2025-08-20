@@ -9,13 +9,16 @@ import {
   Settings as CogIcon,
   LogOut as LogOutIcon,
   Menu as MenuIcon,
-  X as XIcon
+  X as XIcon,
+  CreditCard
 } from 'lucide-react';
 import { JAMB_SUBJECTS } from '../lib/supabase';
+import SubscriptionBadge from './SubscriptionBadge';
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
   { name: 'Practice', href: '/practice', icon: BookOpenIcon },
+  { name: 'Pricing', href: '/pricing', icon: CreditCard },
   { name: 'Profile', href: '/profile', icon: UserIcon },
 ];
 
@@ -121,9 +124,12 @@ function SidebarContent({
                 </span>
               </div>
             </div>
-            <div className="ml-3">
+            <div className="ml-3 flex-1">
               <p className="text-sm font-medium text-gray-900">{profile?.full_name || 'User'}</p>
-              <p className="text-xs text-gray-500">{profile?.role || 'Student'}</p>
+              <div className="flex items-center justify-between">
+                <p className="text-xs text-gray-500">{profile?.role || 'Student'}</p>
+                <SubscriptionBadge />
+              </div>
             </div>
           </div>
         </div>

@@ -1,4 +1,4 @@
-CREATE TABLE plans (
+CREATE TABLE jamb_coaching_plans (
     id SERIAL PRIMARY KEY,
                     price_id VARCHAR(255) UNIQUE NOT NULL,
                     plan_type VARCHAR(50) NOT NULL,

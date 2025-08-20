@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { useSubscription } from '../hooks/useSubscription';
 import {
   BookOpen as BookOpenIcon,
   Clock as ClockIcon,
   Play as PlayIcon,
-  Trophy as TrophyIcon
+  Trophy as TrophyIcon,
+  Crown,
+  AlertCircle
 } from 'lucide-react';
 import { getQuestionsBySubjectAndTopic, JAMB_SUBJECTS } from '../lib/supabase';
 
@@ -21,6 +24,11 @@ export default function PracticePage() {
   const [selectedSubject, setSelectedSubject] = useState<string>('');
   const [selectedTopic, setSelectedTopic] = useState<string>('');
   const [difficultyLevel, setDifficultyLevel] = useState<number>(1);
+  const { 
+    getSubscriptionStatus, 
+    getRemainingFreeQuestions, 
+    loading: subscriptionLoading 
+  } = useSubscription();
 
   // Fetch questions when subject/topic changes
   const { data: questions = [], isLoading } = useQuery({
@@ -34,6 +42,9 @@ export default function PracticePage() {
     setSelectedTopic(''); // Reset topic when subject changes
   };
 
+  const subscriptionStatus = getSubscriptionStatus();
+  const remainingQuestions = getRemainingFreeQuestions();
+
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Header */}
@@ -42,6 +53,29 @@ export default function PracticePage() {
         <p className="mt-2 text-gray-600">
           Choose a subject and topic to start your practice session
         </p>
+        
+        {/* Subscription Status */}
+        {!subscriptionLoading && (
+          <div className="mt-4 inline-flex items-center justify-center">
+            {subscriptionStatus === 'premium' ? (
+              <div className="flex items-center px-4 py-2 bg-yellow-100 text-yellow-800 rounded-full">
+                <Crown className="h-5 w-5 mr-2" />
+                <span className="font-medium">Premium Member - Unlimited Access</span>
+              </div>
+            ) : subscriptionStatus === 'free' ? (
+              <div className="flex items-center px-4 py-2 bg-blue-100 text-blue-800 rounded-full">
+                <ClockIcon className="h-5 w-5 mr-2" />
+                <span className="font-medium">{remainingQuestions} Free Questions Remaining</span>
+              </div>
+            ) : (
+              <div className="flex items-center px-4 py-2 bg-red-100 text-red-800 rounded-full">
+                <AlertCircle className="h-5 w-5 mr-2" />
+                <span className="font-medium">Free Questions Exhausted - </span>
+                <Link to="/pricing" className="ml-1 underline font-bold">Upgrade Now</Link>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Practice Options */}

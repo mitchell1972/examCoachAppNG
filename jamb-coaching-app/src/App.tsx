@@ -19,6 +19,7 @@ import SubjectPage from './pages/SubjectPage';
 import ProfilePage from './pages/ProfilePage';
 import AdminPage from './pages/AdminPage';
 import AuthCallbackPage from './pages/AuthCallbackPage';
+import PricingPage from './pages/PricingPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -41,6 +42,7 @@ function App() {
               <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
               <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
               <Route path="/auth/callback" element={<AuthCallbackPage />} />
+              <Route path="/pricing" element={<PricingPage />} />
               
               {/* Private routes */}
               <Route element={<PrivateRoute><Layout /></PrivateRoute>}>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
+import { useSubscription } from '../hooks/useSubscription';
 import {
   CheckCircle as CheckCircleIcon,
   XCircle as XCircleIcon,
@@ -11,6 +12,7 @@ import {
   BookOpen as BookOpenIcon
 } from 'lucide-react';
 import { getDailyQuestions, getQuestionsBySubjectAndTopic, submitAnswer, Question } from '../lib/supabase';
+import PaywallModal from '../components/PaywallModal';
 import toast from 'react-hot-toast';
 
 export default function SubjectPage() {
@@ -18,6 +20,7 @@ export default function SubjectPage() {
   const [searchParams] = useSearchParams();
   const topic = searchParams.get('topic');
   const { user } = useAuth();
+  const { checkQuestionAccess, freeQuestionsUsed, FREE_QUESTIONS_LIMIT, refreshSubscription } = useSubscription();
   
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState<Record<string, 'A' | 'B' | 'C' | 'D'>>({});
@@ -26,6 +29,7 @@ export default function SubjectPage() {
   const [showResults, setShowResults] = useState(false);
   const [submittedAnswers, setSubmittedAnswers] = useState<Record<string, any>>({});
   const [loading, setLoading] = useState(false);
+  const [showPaywall, setShowPaywall] = useState(false);
 
   // Fetch questions
   const { data: questions = [], isLoading } = useQuery({
@@ -46,12 +50,29 @@ export default function SubjectPage() {
 
   const currentQuestion = questions[currentQuestionIndex];
 
+  // Check access before showing questions
+  useEffect(() => {
+    if (questions.length > 0 && user) {
+      const access = checkQuestionAccess();
+      if (!access.canAccess) {
+        setShowPaywall(true);
+      }
+    }
+  }, [questions, user, checkQuestionAccess]);
+
   // Reset timer when question changes
   useEffect(() => {
     setQuestionStartTime(Date.now());
   }, [currentQuestionIndex]);
 
   const handleAnswerSelect = (answer: 'A' | 'B' | 'C' | 'D') => {
+    // Check access before allowing answer selection
+    const access = checkQuestionAccess();
+    if (!access.canAccess) {
+      setShowPaywall(true);
+      return;
+    }
+
     if (!currentQuestion) return;
     
     setUserAnswers(prev => ({
@@ -61,6 +82,13 @@ export default function SubjectPage() {
   };
 
   const handleNextQuestion = async () => {
+    // Check access before proceeding
+    const access = checkQuestionAccess();
+    if (!access.canAccess) {
+      setShowPaywall(true);
+      return;
+    }
+
     if (!currentQuestion || !user) return;
 
     const selectedAnswer = userAnswers[currentQuestion.id];
@@ -79,6 +107,9 @@ export default function SubjectPage() {
         ...prev,
         [currentQuestion.id]: result.data
       }));
+
+      // Refresh subscription status to update question count
+      refreshSubscription();
 
       if (currentQuestionIndex < questions.length - 1) {
         setCurrentQuestionIndex(prev => prev + 1);
@@ -345,6 +376,14 @@ export default function SubjectPage() {
           </div>
         </div>
       )}
+
+      {/* Paywall Modal */}
+      <PaywallModal
+        isOpen={showPaywall}
+        onClose={() => setShowPaywall(false)}
+        freeQuestionsUsed={freeQuestionsUsed}
+        totalFreeQuestions={FREE_QUESTIONS_LIMIT}
+      />
     </div>
   );
 }
