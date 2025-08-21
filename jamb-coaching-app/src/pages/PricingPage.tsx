@@ -87,7 +87,7 @@ export default function PricingPage() {
     const subscriptionStatus = urlParams.get('subscription');
 
     if (subscriptionStatus === 'success') {
-      toast.success('Payment successful! Welcome to JAMB Coach Premium!');
+      toast.success('Payment successful! Welcome to ExamAppNG Premium!');
       window.history.replaceState({}, document.title, window.location.pathname);
       
       setTimeout(() => {
@@ -160,7 +160,7 @@ export default function PricingPage() {
         {/* Header */}
         <div className="text-center">
           <h2 className="text-3xl font-bold text-gray-900 sm:text-4xl">
-            Choose Your JAMB Coaching Plan
+            Choose Your ExamAppNG Coaching Plan
           </h2>
           <p className="mt-4 text-lg text-gray-600">
             Get unlimited access to thousands of JAMB questions and boost your exam scores
@@ -265,7 +265,7 @@ export default function PricingPage() {
         <div className="mt-16">
           <div className="text-center">
             <h3 className="text-2xl font-bold text-gray-900">
-              Why Choose JAMB Coach Premium?
+              Why Choose ExamAppNG Premium?
             </h3>
           </div>
           <div className="mt-8 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
@@ -314,7 +314,7 @@ export default function PricingPage() {
               Secure Payment & Trusted by Students
             </h3>
             <p className="mt-2 text-gray-600">
-              Your payment information is secure with industry-standard encryption. Join thousands of students who trust JAMB Coach.
+              Your payment information is secure with industry-standard encryption. Join thousands of students who trust ExamAppNG.
             </p>
             <div className="mt-4 flex items-center justify-center text-sm text-gray-500">
               <span>Powered by Stripe • SSL Secured • 30-day Money Back Guarantee</span>

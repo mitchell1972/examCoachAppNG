@@ -1,7 +1,7 @@
 {
-  "name": "JAMB Coach - AI-Powered Exam Preparation",
-  "short_name": "JAMB Coach",
-  "description": "AI-powered JAMB coaching app with personalized questions, smart analytics, and comprehensive practice for all 5 subjects.",
+  "name": "ExamAppNG - JAMB Coach | AI-Powered Exam Preparation",
+  "short_name": "ExamAppNG",
+  "description": "ExamAppNG - AI-powered JAMB coaching app with personalized questions, smart analytics, and comprehensive practice for all 5 subjects.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

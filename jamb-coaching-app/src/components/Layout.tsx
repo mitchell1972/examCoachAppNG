@@ -117,8 +117,8 @@ function SidebarContent({
     <div className="flex-1 flex flex-col min-h-0 border-r border-gray-200 bg-white">
       <div className="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto">
         <div className="flex items-center flex-shrink-0 px-4">
-          <img className="h-8 w-auto" src="/images/clean_pwa_progressive_web_app_icon_shopping_bag.jpg" alt="JAMB Coach" />
-          <span className="ml-2 text-xl font-bold text-gray-900">JAMB Coach</span>
+          <img className="h-8 w-auto" src="/images/clean_pwa_progressive_web_app_icon_shopping_bag.jpg" alt="ExamAppNG" />
+          <span className="ml-2 text-xl font-bold text-gray-900">ExamAppNG - JAMB Coach</span>
         </div>
         
         {/* User info */}

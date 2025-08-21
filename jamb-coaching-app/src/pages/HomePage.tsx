@@ -110,8 +110,8 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
             <div className="flex items-center">
-              <img className="h-8 w-auto" src="/images/clean_pwa_progressive_web_app_icon_shopping_bag.jpg" alt="JAMB Coach" />
-              <span className="ml-2 text-xl font-bold text-gray-900">JAMB Coach</span>
+              <img className="h-8 w-auto" src="/images/clean_pwa_progressive_web_app_icon_shopping_bag.jpg" alt="ExamAppNG" />
+              <span className="ml-2 text-xl font-bold text-gray-900">ExamAppNG - JAMB Coach</span>
             </div>
             <div className="flex items-center space-x-4">
               <Link
@@ -261,7 +261,7 @@ export default function HomePage() {
           <div className="text-center">
             <h2 className="text-3xl font-extrabold text-gray-900">Student Success Stories</h2>
             <p className="mt-4 text-lg text-gray-500">
-              See how JAMB Coach has helped thousands of students achieve their goals
+              See how ExamAppNG has helped thousands of students achieve their goals
             </p>
           </div>
           
@@ -307,15 +307,15 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <div className="flex justify-center items-center mb-4">
-              <img className="h-8 w-auto" src="/images/clean_pwa_progressive_web_app_icon_shopping_bag.jpg" alt="JAMB Coach" />
-              <span className="ml-2 text-xl font-bold text-white">JAMB Coach</span>
+              <img className="h-8 w-auto" src="/images/clean_pwa_progressive_web_app_icon_shopping_bag.jpg" alt="ExamAppNG" />
+              <span className="ml-2 text-xl font-bold text-white">ExamAppNG - JAMB Coach</span>
             </div>
             <p className="text-gray-400">
-              AI-powered JAMB coaching for Nigerian students. Achieve your university admission goals.
+              AI-powered JAMB coaching for Nigerian students. Achieve your university admission goals with ExamAppNG.
             </p>
             <div className="mt-4 flex justify-center space-x-6">
               <span className="text-gray-400 text-sm">
-                © 2025 JAMB Coach. Built for Nigerian students.
+                © 2025 ExamAppNG - JAMB Coach. Built for Nigerian students.
               </span>
             </div>
           </div>
