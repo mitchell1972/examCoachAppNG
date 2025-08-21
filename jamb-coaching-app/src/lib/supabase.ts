@@ -132,12 +132,23 @@ export interface UserQuestionSetAccess {
 
 // Auth helper functions
 export async function getCurrentUser() {
-  const { data: { user }, error } = await supabase.auth.getUser();
-  if (error) {
-    console.error('Error getting user:', error);
+  try {
+    const { data: { user }, error } = await supabase.auth.getUser();
+    if (error) {
+      // Handle common authentication errors gracefully
+      if (error.message.includes('Auth session missing') || error.message.includes('session_not_found')) {
+        console.log('No active session found');
+        return null;
+      }
+      console.error('Error getting user:', error);
+      return null;
+    }
+    return user;
+  } catch (error: any) {
+    // Catch any unexpected errors to prevent hanging
+    console.error('Unexpected error getting user:', error);
     return null;
   }
-  return user;
 }
 
 export async function signUp(email: string, password: string, userData: { full_name: string; school_name?: string; state?: string }) {
@@ -209,18 +220,23 @@ export async function signOut() {
 
 // Profile functions
 export async function getUserProfile(userId: string): Promise<Profile | null> {
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('user_id', userId)
-    .maybeSingle();
+  try {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('user_id', userId)
+      .maybeSingle();
 
-  if (error) {
-    console.error('Error fetching profile:', error);
+    if (error) {
+      console.error('Error fetching profile:', error);
+      return null;
+    }
+
+    return data;
+  } catch (error: any) {
+    console.error('Unexpected error fetching profile:', error);
     return null;
   }
-
-  return data;
 }
 
 export async function updateUserProfile(userId: string, updates: Partial<Profile>) {

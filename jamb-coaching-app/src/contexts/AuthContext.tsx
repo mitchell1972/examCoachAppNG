@@ -28,7 +28,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const loadingTimeout = setTimeout(() => {
           console.warn('User loading timeout reached - forcing loading state to false');
           setLoading(false);
-        }, 5000); // 5 second timeout
+        }, 3000); // Reduced to 3 second timeout for faster UX
         
         const currentUser = await getCurrentUser();
         setUser(currentUser);
@@ -49,6 +49,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } catch (error) {
         console.error('Error loading user:', error);
         setLoading(false);
+        // Ensure user is cleared if there's an error
+        setUser(null);
+        setProfile(null);
       }
     }
     
@@ -57,25 +60,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Set up auth listener
     try {
       const { data: { subscription } } = supabase.auth.onAuthStateChange(
-        async (_event, session) => {
-          setUser(session?.user || null);
-          
-          if (session?.user) {
-            try {
-              const userProfile = await getUserProfile(session.user.id);
-              setProfile(userProfile);
-            } catch (profileError) {
-              console.error('Error loading user profile from auth change:', profileError);
+        async (event, session) => {
+          try {
+            setUser(session?.user || null);
+            
+            if (session?.user) {
+              try {
+                const userProfile = await getUserProfile(session.user.id);
+                setProfile(userProfile);
+              } catch (profileError) {
+                console.error('Error loading user profile from auth change:', profileError);
+                // Continue without profile if it fails to load
+                setProfile(null);
+              }
+            } else {
+              setProfile(null);
             }
-          } else {
-            setProfile(null);
+            
+            setLoading(false);
+          } catch (error) {
+            console.error('Error in auth state change handler:', error);
+            setLoading(false);
+            // Reset state on error
+            if (!session?.user) {
+              setUser(null);
+              setProfile(null);
+            }
           }
-          
-          setLoading(false);
         }
       );
 
-      return () => subscription.unsubscribe();
+      return () => {
+        try {
+          subscription.unsubscribe();
+        } catch (error) {
+          console.error('Error unsubscribing from auth changes:', error);
+        }
+      };
     } catch (error) {
       console.error('Error setting up auth listener:', error);
       setLoading(false);
