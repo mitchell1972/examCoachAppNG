@@ -375,26 +375,86 @@ export async function getAvailableQuestionSets(subject: string): Promise<Questio
     throw new Error('User not authenticated');
   }
 
-  const session = await supabase.auth.getSession();
-  if (!session.data.session) {
-    throw new Error('No active session');
+  // Get all question sets for the subject
+  const { data: questionSets, error: setsError } = await supabase
+    .from('question_sets')
+    .select('*')
+    .eq('subject', subject)
+    .eq('is_active', true)
+    .order('delivery_date', { ascending: false });
+
+  if (setsError) {
+    console.error('Error fetching question sets:', setsError);
+    throw new Error('Failed to fetch question sets');
   }
 
-  const response = await fetch(`${supabaseUrl}/functions/v1/question-set-management?action=available-sets&subject=${encodeURIComponent(subject)}`, {
-    method: 'GET',
-    headers: {
-      'Authorization': `Bearer ${session.data.session.access_token}`,
-      'Content-Type': 'application/json'
+  if (!questionSets || questionSets.length === 0) {
+    return [];
+  }
+
+  // Check user subscription status
+  const { data: subscriptionData } = await supabase
+    .from('jamb_coaching_subscriptions')
+    .select('*')
+    .eq('user_id', user.id)
+    .eq('status', 'active')
+    .maybeSingle();
+
+  const hasActiveSubscription = !!subscriptionData;
+
+  // Check user's access to question sets
+  const { data: userAccess } = await supabase
+    .from('user_question_set_access')
+    .select('question_set_id, can_access')
+    .eq('user_id', user.id);
+
+  const accessMap = new Map(userAccess?.map(access => [access.question_set_id, access.can_access]) || []);
+
+  // Process question sets with access information
+  const processedSets = [];
+  for (let i = 0; i < questionSets.length; i++) {
+    const set = questionSets[i];
+    const isFirstSet = i === questionSets.length - 1; // Oldest set (first for the subject)
+    const hasExistingAccess = accessMap.get(set.id);
+    
+    let canAccess = false;
+    let accessReason = '';
+
+    if (hasActiveSubscription) {
+      canAccess = true;
+      accessReason = 'subscription';
+    } else if (isFirstSet || hasExistingAccess) {
+      canAccess = true;
+      accessReason = isFirstSet ? 'free_first_set' : 'previously_granted';
+    } else {
+      canAccess = false;
+      accessReason = 'subscription_required';
     }
-  });
 
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.error?.message || 'Failed to fetch question sets');
+    // Grant access to first set if not already granted
+    if (isFirstSet && !hasExistingAccess && !accessMap.has(set.id)) {
+      const { error: accessError } = await supabase
+        .from('user_question_set_access')
+        .insert({
+          user_id: user.id,
+          question_set_id: set.id,
+          can_access: true
+        });
+      
+      if (accessError) {
+        console.error('Error granting first set access:', accessError);
+      }
+    }
+
+    processedSets.push({
+      ...set,
+      can_access: canAccess,
+      access_reason: accessReason,
+      is_first_set: isFirstSet
+    });
   }
 
-  const data = await response.json();
-  return data?.data?.questionSets || [];
+  return processedSets;
 }
 
 export async function getQuestionSetQuestions(questionSetId: string): Promise<Question[]> {
@@ -403,26 +463,72 @@ export async function getQuestionSetQuestions(questionSetId: string): Promise<Qu
     throw new Error('User not authenticated');
   }
 
-  const session = await supabase.auth.getSession();
-  if (!session.data.session) {
-    throw new Error('No active session');
+  // Check if user has access to this question set
+  const { data: userAccess } = await supabase
+    .from('user_question_set_access')
+    .select('*')
+    .eq('user_id', user.id)
+    .eq('question_set_id', questionSetId)
+    .eq('can_access', true)
+    .maybeSingle();
+
+  // Also check if user has active subscription
+  const { data: subscriptionData } = await supabase
+    .from('jamb_coaching_subscriptions')
+    .select('*')
+    .eq('user_id', user.id)
+    .eq('status', 'active')
+    .maybeSingle();
+
+  const hasActiveSubscription = !!subscriptionData;
+  const hasDirectAccess = !!userAccess;
+
+  if (!hasDirectAccess && !hasActiveSubscription) {
+    throw new Error('Access denied to this question set');
   }
 
-  const response = await fetch(`${supabaseUrl}/functions/v1/question-set-management?action=questions&question_set_id=${questionSetId}`, {
-    method: 'GET',
-    headers: {
-      'Authorization': `Bearer ${session.data.session.access_token}`,
-      'Content-Type': 'application/json'
-    }
+  // Get questions for the question set
+  const { data: questionSetQuestions, error: qsError } = await supabase
+    .from('question_set_questions')
+    .select('question_id, position')
+    .eq('question_set_id', questionSetId)
+    .order('position', { ascending: true });
+
+  if (qsError) {
+    console.error('Error fetching question set questions:', qsError);
+    throw new Error('Failed to fetch question set questions');
+  }
+
+  if (!questionSetQuestions || questionSetQuestions.length === 0) {
+    return [];
+  }
+
+  const questionIds = questionSetQuestions.map(qsq => qsq.question_id);
+
+  // Fetch the actual questions
+  const { data: questions, error: questionsError } = await supabase
+    .from('questions')
+    .select('*')
+    .in('id', questionIds)
+    .eq('is_active', true);
+
+  if (questionsError) {
+    console.error('Error fetching questions details:', questionsError);
+    throw new Error('Failed to fetch questions details');
+  }
+
+  if (!questions) {
+    return [];
+  }
+
+  // Sort questions by position
+  const sortedQuestions = questions.sort((a, b) => {
+    const positionA = questionSetQuestions.find(qsq => qsq.question_id === a.id)?.position || 0;
+    const positionB = questionSetQuestions.find(qsq => qsq.question_id === b.id)?.position || 0;
+    return positionA - positionB;
   });
 
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.error?.message || 'Failed to fetch questions');
-  }
-
-  const data = await response.json();
-  return data?.data?.questions || [];
+  return sortedQuestions;
 }
 
 export async function deleteQuestionSet(questionSetId: string): Promise<void> {
@@ -431,25 +537,27 @@ export async function deleteQuestionSet(questionSetId: string): Promise<void> {
     throw new Error('User not authenticated');
   }
 
-  const session = await supabase.auth.getSession();
-  if (!session.data.session) {
-    throw new Error('No active session');
+  // Soft delete the question set (mark as inactive)
+  const { error: deleteError } = await supabase
+    .from('question_sets')
+    .update({ is_active: false })
+    .eq('id', questionSetId);
+
+  if (deleteError) {
+    console.error('Error deleting question set:', deleteError);
+    throw new Error('Failed to delete question set');
   }
 
-  const response = await fetch(`${supabaseUrl}/functions/v1/question-set-management?action=delete-set`, {
-    method: 'DELETE',
-    headers: {
-      'Authorization': `Bearer ${session.data.session.access_token}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      question_set_id: questionSetId
-    })
-  });
+  // Also remove user's access to this set
+  const { error: accessError } = await supabase
+    .from('user_question_set_access')
+    .delete()
+    .eq('user_id', user.id)
+    .eq('question_set_id', questionSetId);
 
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.error?.message || 'Failed to delete question set');
+  if (accessError) {
+    console.error('Error removing user access:', accessError);
+    // Don't throw here as the main deletion succeeded
   }
 }
 
