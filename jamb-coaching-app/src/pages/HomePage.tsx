@@ -27,7 +27,7 @@ const features = [
   },
   {
     name: 'Daily Practice',
-    description: '20 fresh questions per subject every 3 days to keep your practice consistent.',
+    description: '50 fresh questions per subject every 3 days to keep your practice consistent.',
     icon: ClockIcon,
   },
   {

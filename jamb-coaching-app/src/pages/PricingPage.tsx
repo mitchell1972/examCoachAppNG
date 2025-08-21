@@ -22,7 +22,7 @@ const PRICING_PLANS: PricingPlan[] = [
     price: '₦3,700',
     features: [
       'Access to all JAMB questions',
-      'New questions every 4 days',
+      'New questions every 3 days',
       '5 subjects: Math, Physics, Chemistry, Biology, English',
       'Detailed explanations for all answers',
       'Performance analytics and progress tracking',
@@ -289,7 +289,7 @@ export default function PricingPage() {
                 Fresh Content
               </h4>
               <p className="mt-2 text-gray-600">
-                New questions added every 4 days to keep your practice sessions engaging and challenging.
+                New questions added every 3 days to keep your practice sessions engaging and challenging.
               </p>
             </div>
 

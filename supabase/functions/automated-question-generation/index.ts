@@ -15,7 +15,7 @@ Deno.serve(async (req) => {
         console.log('Starting automated question generation...');
 
         // Get environment variables
-        const deepseekApiKey = 'sk-a2c5efa4db024d73abe9a84b5530f8fe'; // User-provided API key
+        const deepseekApiKey = Deno.env.get('DEEPSEEK_API_KEY');
         const supabaseUrl = Deno.env.get('SUPABASE_URL');
         const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
@@ -233,7 +233,7 @@ Ensure all questions:
 
             console.log(`Created question set for ${subject} with ID: ${questionSetId}`);
 
-            // Save questions to database
+            // Save questions to database with question_set_id
             const savedQuestions = [];
             for (const q of finalQuestions) {
                 const questionData = {
@@ -247,7 +247,8 @@ Ensure all questions:
                     option_d: q.option_d,
                     correct_answer: q.correct_answer,
                     explanation: q.explanation,
-                    source: 'DeepSeek-AI-Automated'
+                    source: 'DeepSeek-AI-Automated',
+                    question_set_id: questionSetId // Link to question set
                 };
 
                 const insertResponse = await fetch(`${supabaseUrl}/rest/v1/questions`, {
@@ -265,25 +266,6 @@ Ensure all questions:
                     const savedQuestion = await insertResponse.json();
                     savedQuestions.push(savedQuestion[0]);
                 }
-            }
-
-            // Link questions to question set
-            for (let i = 0; i < savedQuestions.length; i++) {
-                const linkData = {
-                    question_set_id: questionSetId,
-                    question_id: savedQuestions[i].id,
-                    position: i + 1
-                };
-
-                await fetch(`${supabaseUrl}/rest/v1/question_set_questions`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${serviceRoleKey}`,
-                        'apikey': serviceRoleKey,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(linkData)
-                });
             }
 
             generatedSets.push({

@@ -29,8 +29,15 @@ export default function Layout() {
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
 
   const handleSignOut = async () => {
-    await signOut();
-    navigate('/');
+    try {
+      await signOut();
+      // Force page reload to ensure complete auth state clearing
+      window.location.href = '/';
+    } catch (error) {
+      console.error('Sign out error:', error);
+      // Even if there's an error, force navigation
+      window.location.href = '/';
+    }
   };
 
   return (
