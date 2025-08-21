@@ -59,12 +59,35 @@ Deno.serve(async (req) => {
                 }
             }
 
-            // Generate topics for the subject
-            const topicPrompt = `Generate 3-5 diverse, important topics for JAMB ${subject} examination. Return only a JSON array of topic strings. Example: ["Quadratic Equations", "Trigonometry", "Calculus"]`;
+            // User's specific prompts for each subject
+            let questionPrompt;
+            switch(subject) {
+                case 'Mathematics':
+                    questionPrompt = 'Give me 50 mathematics Jamb questions for Nigerian students to practice';
+                    break;
+                case 'English Language':
+                    questionPrompt = 'Give me 50 English Jamb questions for Nigerian students to practice';
+                    break;
+                case 'Physics':
+                    questionPrompt = 'Give me 50 physics Jamb questions for Nigerian students to practice';
+                    break;
+                case 'Chemistry':
+                    questionPrompt = 'Give me 50 Chemistry Jamb questions for Nigerian students to practice';
+                    break;
+                case 'Biology':
+                    questionPrompt = 'Give me 50 Biology Jamb questions for Nigerian students to practice';
+                    break;
+                default:
+                    questionPrompt = `Give me 50 ${subject} Jamb questions for Nigerian students to practice`;
+            }
 
-            let topics = [];
+            questionPrompt += `\n\nIMPORTANT: Return ONLY valid JSON in this exact format:\n{\n  "questions": [\n    {\n      "question_text": "Question text here",\n      "option_a": "Option A text",\n      "option_b": "Option B text", \n      "option_c": "Option C text",\n      "option_d": "Option D text",\n      "correct_answer": "A",\n      "explanation": "Detailed explanation of the correct answer"\n    }\n  ]\n}`;
+
+            // Generate all 50 questions in one API call instead of splitting by topics
+            const allQuestions = [];
+
             try {
-                const topicResponse = await fetch('https://api.deepseek.com/chat/completions', {
+                const questionResponse = await fetch('https://api.deepseek.com/chat/completions', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -74,123 +97,58 @@ Deno.serve(async (req) => {
                         model: 'deepseek-chat',
                         messages: [{
                             role: 'user',
-                            content: topicPrompt
+                            content: questionPrompt
                         }],
-                        max_tokens: 500,
+                        max_tokens: 8000, // Increased for 50 questions
                         temperature: 0.7
                     })
                 });
 
-                if (topicResponse.ok) {
-                    const topicData = await topicResponse.json();
-                    const topicText = topicData.choices[0].message.content;
-                    topics = JSON.parse(topicText.match(/\[.*\]/)[0]);
-                }
-            } catch (error) {
-                console.error('Error generating topics:', error);
-                // Fallback topics
-                topics = subject === 'Mathematics' ? ['Algebra', 'Geometry', 'Calculus'] :
-                        subject === 'Physics' ? ['Mechanics', 'Thermodynamics', 'Optics'] :
-                        subject === 'Chemistry' ? ['Organic Chemistry', 'Inorganic Chemistry', 'Physical Chemistry'] :
-                        subject === 'Biology' ? ['Cell Biology', 'Genetics', 'Ecology'] :
-                        ['Comprehension', 'Grammar', 'Vocabulary'];
-            }
-
-            console.log(`Generated topics for ${subject}:`, topics);
-
-            // Generate questions for each topic
-            const allQuestions = [];
-            const questionsPerTopic = Math.ceil(questionsPerSubject / topics.length);
-
-            for (const topic of topics) {
-                console.log(`Generating questions for topic: ${topic}`);
-
-                const questionPrompt = `Generate ${questionsPerTopic} multiple-choice questions for JAMB ${subject} on the topic "${topic}". 
-
-IMPORTANT REQUIREMENTS - MUST FOLLOW NIGERIAN JAMB SYLLABUS:
-
-**For Mathematics:** Follow the JAMB Mathematics syllabus covering Number and Numeration, Algebraic Processes, Geometry and Trigonometry, Calculus, and Statistics. Use Nigerian context where applicable.
-
-**For Physics:** Align with JAMB Physics syllabus including Mechanics, Thermal Physics, Waves and Sound, Light, Electricity and Magnetism, Modern Physics, and Space Physics. Use metric units and Nigerian examples.
-
-**For Chemistry:** Follow JAMB Chemistry syllabus covering Separation of Mixtures, Atomic Structure, Chemical Bonding, Air, Water, Solids and Solutions, Acids/Bases/Salts, Oxidation and Reduction, Hydrocarbons, and Petrochemicals relevant to Nigeria.
-
-**For Biology:** Align with JAMB Biology syllabus including Cell Biology, Evolution, Genetics, Ecology (with Nigerian ecosystems), Diversity of Living Things, and Applied Biology relevant to Nigerian agriculture and health.
-
-**For English Language:** Follow JAMB English syllabus covering Comprehension, Lexis and Structure, Oral Forms, and Written Forms using Nigerian English context and examples.
-
-RETURN ONLY VALID JSON with this exact structure:
-{
-  "questions": [
-    {
-      "question_text": "Question text here",
-      "option_a": "Option A text",
-      "option_b": "Option B text", 
-      "option_c": "Option C text",
-      "option_d": "Option D text",
-      "correct_answer": "A",
-      "explanation": "Detailed explanation of the correct answer"
-    }
-  ]
-}
-
-Ensure all questions:
-- Follow current JAMB examination standards and format
-- Use appropriate Nigerian context and examples
-- Include comprehensive explanations
-- Use proper grammar and clear language
-- Cover core syllabus areas for the subject`;
-
-                try {
-                    const questionResponse = await fetch('https://api.deepseek.com/chat/completions', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${deepseekApiKey}`
-                        },
-                        body: JSON.stringify({
-                            model: 'deepseek-chat',
-                            messages: [{
-                                role: 'user',
-                                content: questionPrompt
-                            }],
-                            max_tokens: 3000,
-                            temperature: 0.7
-                        })
-                    });
-
-                    if (questionResponse.ok) {
-                        const questionData = await questionResponse.json();
-                        const generatedText = questionData.choices[0].message.content;
+                if (questionResponse.ok) {
+                    const questionData = await questionResponse.json();
+                    const generatedText = questionData.choices[0].message.content;
+                    
+                    console.log(`Generated text length: ${generatedText.length} characters`);
+                    
+                    // Parse JSON response
+                    try {
+                        const parsed = JSON.parse(generatedText);
+                        if (parsed.questions && Array.isArray(parsed.questions)) {
+                            allQuestions.push(...parsed.questions.map(q => ({ ...q, topic: 'General' })));
+                            console.log(`Successfully parsed ${parsed.questions.length} questions`);
+                        }
+                    } catch (parseError) {
+                        console.error('JSON parse error for questions:', parseError);
+                        console.log('Generated text:', generatedText.substring(0, 500) + '...');
                         
-                        // Parse JSON response
-                        try {
-                            const parsed = JSON.parse(generatedText);
-                            if (parsed.questions && Array.isArray(parsed.questions)) {
-                                allQuestions.push(...parsed.questions.map(q => ({ ...q, topic })));
-                            }
-                        } catch (parseError) {
-                            console.error('JSON parse error for questions:', parseError);
-                            // Try extracting JSON from text
-                            const jsonMatch = generatedText.match(/{[\s\S]*}/);    
-                            if (jsonMatch) {
-                                try {
-                                    const extracted = JSON.parse(jsonMatch[0]);
-                                    if (extracted.questions) {
-                                        allQuestions.push(...extracted.questions.map(q => ({ ...q, topic })));
-                                    }
-                                } catch (fallbackError) {
-                                    console.error('Fallback parse failed:', fallbackError);
+                        // Try extracting JSON from text
+                        const jsonMatch = generatedText.match(/{[\s\S]*}/);
+                        if (jsonMatch) {
+                            try {
+                                const extracted = JSON.parse(jsonMatch[0]);
+                                if (extracted.questions && Array.isArray(extracted.questions)) {
+                                    allQuestions.push(...extracted.questions.map(q => ({ ...q, topic: 'General' })));
+                                    console.log(`Successfully extracted ${extracted.questions.length} questions from fallback parse`);
                                 }
+                            } catch (fallbackError) {
+                                console.error('Fallback parse failed:', fallbackError);
                             }
                         }
                     }
-                } catch (error) {
-                    console.error(`Error generating questions for topic ${topic}:`, error);
+                } else {
+                    console.error('API response not ok:', questionResponse.status, questionResponse.statusText);
                 }
+            } catch (error) {
+                console.error(`Error generating questions for ${subject}:`, error);
             }
 
-            // Ensure we have exactly 50 questions (trim or pad as needed)
+            // Ensure we have exactly 50 questions
+            console.log(`Total questions generated: ${allQuestions.length}`);
+            
+            if (allQuestions.length < questionsPerSubject) {
+                console.warn(`Only generated ${allQuestions.length} out of ${questionsPerSubject} questions for ${subject}`);
+            }
+            
             const finalQuestions = allQuestions.slice(0, questionsPerSubject);
             
             if (finalQuestions.length === 0) {
@@ -235,7 +193,17 @@ Ensure all questions:
 
             // Save questions to database with question_set_id
             const savedQuestions = [];
-            for (const q of finalQuestions) {
+            console.log(`Saving ${finalQuestions.length} questions to database...`);
+            
+            for (let i = 0; i < finalQuestions.length; i++) {
+                const q = finalQuestions[i];
+                
+                // Validate question before saving
+                if (!q.question_text || !q.option_a || !q.option_b || !q.option_c || !q.option_d || !q.correct_answer) {
+                    console.warn(`Skipping invalid question ${i + 1}:`, q);
+                    continue;
+                }
+                
                 const questionData = {
                     subject,
                     topic: q.topic || 'General',
@@ -245,28 +213,71 @@ Ensure all questions:
                     option_b: q.option_b,
                     option_c: q.option_c,
                     option_d: q.option_d,
-                    correct_answer: q.correct_answer,
-                    explanation: q.explanation,
+                    correct_answer: q.correct_answer.toUpperCase(),
+                    explanation: q.explanation || `The correct answer is ${q.correct_answer}`,
                     source: 'DeepSeek-AI-Automated',
-                    question_set_id: questionSetId // Link to question set
+                    question_set_id: questionSetId, // Link to question set
+                    is_active: true,
+                    times_answered: 0,
+                    correct_rate: 0
                 };
 
-                const insertResponse = await fetch(`${supabaseUrl}/rest/v1/questions`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${serviceRoleKey}`,
-                        'apikey': serviceRoleKey,
-                        'Content-Type': 'application/json',
-                        'Prefer': 'return=representation'
-                    },
-                    body: JSON.stringify(questionData)
-                });
+                try {
+                    const insertResponse = await fetch(`${supabaseUrl}/rest/v1/questions`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${serviceRoleKey}`,
+                            'apikey': serviceRoleKey,
+                            'Content-Type': 'application/json',
+                            'Prefer': 'return=representation'
+                        },
+                        body: JSON.stringify(questionData)
+                    });
 
-                if (insertResponse.ok) {
-                    const savedQuestion = await insertResponse.json();
-                    savedQuestions.push(savedQuestion[0]);
+                    if (insertResponse.ok) {
+                        const savedQuestion = await insertResponse.json();
+                        savedQuestions.push(savedQuestion[0]);
+                        
+                        // Also insert into question_set_questions for linking
+                        await fetch(`${supabaseUrl}/rest/v1/question_set_questions`, {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': `Bearer ${serviceRoleKey}`,
+                                'apikey': serviceRoleKey,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                question_set_id: questionSetId,
+                                question_id: savedQuestion[0].id,
+                                position: i + 1
+                            })
+                        });
+                        
+                        console.log(`Saved question ${i + 1}/${finalQuestions.length}`);
+                    } else {
+                        const errorText = await insertResponse.text();
+                        console.error(`Failed to save question ${i + 1}:`, errorText);
+                    }
+                } catch (saveError) {
+                    console.error(`Error saving question ${i + 1}:`, saveError);
                 }
             }
+
+            // Update the question set with the actual number of saved questions
+            await fetch(`${supabaseUrl}/rest/v1/question_sets?id=eq.${questionSetId}`, {
+                method: 'PATCH',
+                headers: {
+                    'Authorization': `Bearer ${serviceRoleKey}`,
+                    'apikey': serviceRoleKey,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    total_questions: savedQuestions.length,
+                    updated_at: new Date().toISOString()
+                })
+            });
+
+            console.log(`Successfully saved ${savedQuestions.length} questions for ${subject}`);
 
             generatedSets.push({
                 subject,
