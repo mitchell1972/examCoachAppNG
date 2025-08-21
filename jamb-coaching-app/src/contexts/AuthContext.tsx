@@ -153,6 +153,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         email: email.trim().toLowerCase(),
         password,
         options: {
+          emailRedirectTo: undefined, // Remove email redirect
           data: {
             full_name: fullName.trim()
           }
@@ -174,6 +175,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         if (profileError) {
           console.error('Profile creation error:', profileError);
+        }
+
+        // For unconfirmed accounts, automatically confirm them via admin API
+        if (!data.user.email_confirmed_at) {
+          try {
+            // Auto-confirm the user account using Supabase edge function
+            const response = await supabase.functions.invoke('confirm-user', {
+              body: { userId: data.user.id }
+            });
+            
+            if (response.error) {
+              console.warn('Could not auto-confirm user, but registration succeeded:', response.error);
+            }
+          } catch (confirmError) {
+            console.warn('Auto-confirmation failed, but registration succeeded:', confirmError);
+          }
         }
       }
 
