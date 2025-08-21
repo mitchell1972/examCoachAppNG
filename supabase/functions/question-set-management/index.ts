@@ -14,8 +14,11 @@ Deno.serve(async (req) => {
     try {
         const url = new URL(req.url);
         const method = req.method;
-        const pathSegments = url.pathname.split('/').filter(Boolean);
-        const action = pathSegments[pathSegments.length - 1]; // Last segment should be the action
+        const action = url.searchParams.get('action'); // Get action from query parameters
+        
+        if (!action) {
+            throw new Error('Action parameter is required');
+        }
 
         // Get environment variables
         const supabaseUrl = Deno.env.get('SUPABASE_URL');
