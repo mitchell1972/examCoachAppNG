@@ -430,7 +430,6 @@ export async function getAvailableQuestionSets(subject: string): Promise<Questio
   const processedSets = [];
   for (let i = 0; i < questionSets.length; i++) {
     const set = questionSets[i];
-    const isFirstSet = i === questionSets.length - 1; // Oldest set (first for the subject)
     const hasExistingAccess = accessMap.get(set.id);
     
     let canAccess = false;
@@ -439,16 +438,20 @@ export async function getAvailableQuestionSets(subject: string): Promise<Questio
     if (hasActiveSubscription) {
       canAccess = true;
       accessReason = 'subscription';
-    } else if (isFirstSet || hasExistingAccess) {
+    } else if (set.is_free) {
+      // Allow access to any set marked as free
       canAccess = true;
-      accessReason = isFirstSet ? 'free_first_set' : 'previously_granted';
+      accessReason = 'free_set';
+    } else if (hasExistingAccess) {
+      canAccess = true;
+      accessReason = 'previously_granted';
     } else {
       canAccess = false;
       accessReason = 'subscription_required';
     }
 
-    // Grant access to first set if not already granted
-    if (isFirstSet && !hasExistingAccess && !accessMap.has(set.id)) {
+    // Grant access to free sets if not already granted
+    if (set.is_free && !hasExistingAccess && !accessMap.has(set.id)) {
       const { error: accessError } = await supabase
         .from('user_question_set_access')
         .insert({
@@ -458,7 +461,9 @@ export async function getAvailableQuestionSets(subject: string): Promise<Questio
         });
       
       if (accessError) {
-        console.error('Error granting first set access:', accessError);
+        console.error('Error granting free set access:', accessError);
+      } else {
+        console.log(`Granted access to free question set: ${set.title}`);
       }
     }
 
@@ -466,7 +471,7 @@ export async function getAvailableQuestionSets(subject: string): Promise<Questio
       ...set,
       can_access: canAccess,
       access_reason: accessReason,
-      is_first_set: isFirstSet
+      is_free_set: set.is_free
     });
   }
 

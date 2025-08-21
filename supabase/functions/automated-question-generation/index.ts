@@ -59,29 +59,107 @@ Deno.serve(async (req) => {
                 }
             }
 
-            // User's specific prompts for each subject
+            // User's specific prompts for each subject with enhanced instructions
             let questionPrompt;
             switch(subject) {
                 case 'Mathematics':
-                    questionPrompt = 'Give me 50 mathematics Jamb questions for Nigerian students to practice';
+                    questionPrompt = `Generate 50 diverse and challenging mathematics JAMB questions for Nigerian students to practice. Cover these topics with varied difficulty:
+                    
+                    Topics to include:
+                    - Algebra (equations, inequalities, word problems)
+                    - Geometry (angles, areas, volumes)
+                    - Trigonometry (basic ratios, identities)
+                    - Statistics (mean, median, mode)
+                    - Number theory (fractions, percentages)
+                    - Coordinate geometry (distance, midpoint)
+                    - Probability (basic events)
+                    - Mensuration (perimeter, area)
+                    
+                    IMPORTANT: Each question must be DIFFERENT and realistic for JAMB exam. NO repetitive questions.`;
                     break;
                 case 'English Language':
-                    questionPrompt = 'Give me 50 English Jamb questions for Nigerian students to practice';
+                    questionPrompt = `Generate 50 comprehensive English Language JAMB questions for Nigerian students covering:
+                    
+                    - Grammar (tenses, concord, voice)
+                    - Vocabulary (synonyms, antonyms, word meaning)
+                    - Reading comprehension passages
+                    - Literature (Nigerian and international authors)
+                    - Oral English (pronunciation, stress)
+                    - Essay writing principles
+                    - Lexis and structure
+                    - Summary writing techniques
+                    
+                    Make each question unique and appropriate for West African examination standards.`;
                     break;
                 case 'Physics':
-                    questionPrompt = 'Give me 50 physics Jamb questions for Nigerian students to practice';
+                    questionPrompt = `Generate 50 comprehensive physics JAMB questions covering:
+                    
+                    - Mechanics (motion, forces, energy)
+                    - Heat and thermodynamics
+                    - Waves and sound
+                    - Light and optics
+                    - Electricity and magnetism
+                    - Modern physics (atomic structure)
+                    - Simple harmonic motion
+                    - Gravitational field
+                    
+                    Include numerical problems with appropriate units and realistic scenarios.`;
                     break;
                 case 'Chemistry':
-                    questionPrompt = 'Give me 50 Chemistry Jamb questions for Nigerian students to practice';
+                    questionPrompt = `Generate 50 diverse chemistry JAMB questions covering:
+                    
+                    - Atomic structure and bonding
+                    - Periodic table and properties
+                    - Chemical equations and stoichiometry
+                    - Acids, bases and salts
+                    - Organic chemistry (hydrocarbons, functional groups)
+                    - Electrochemistry
+                    - Chemical kinetics
+                    - Qualitative analysis
+                    
+                    Include both theoretical concepts and practical applications.`;
                     break;
                 case 'Biology':
-                    questionPrompt = 'Give me 50 Biology Jamb questions for Nigerian students to practice';
+                    questionPrompt = `Generate 50 comprehensive biology JAMB questions covering:
+                    
+                    - Cell biology and organization
+                    - Genetics and heredity
+                    - Evolution and classification
+                    - Plant and animal physiology
+                    - Ecology and environment
+                    - Human anatomy and physiology
+                    - Reproduction in plants and animals
+                    - Biotechnology applications
+                    
+                    Focus on Nigerian biological examples where relevant.`;
                     break;
                 default:
-                    questionPrompt = `Give me 50 ${subject} Jamb questions for Nigerian students to practice`;
+                    questionPrompt = `Generate 50 diverse ${subject} JAMB questions for Nigerian students covering the full curriculum with varied difficulty levels.`;
             }
 
-            questionPrompt += `\n\nIMPORTANT: Return ONLY valid JSON in this exact format:\n{\n  "questions": [\n    {\n      "question_text": "Question text here",\n      "option_a": "Option A text",\n      "option_b": "Option B text", \n      "option_c": "Option C text",\n      "option_d": "Option D text",\n      "correct_answer": "A",\n      "explanation": "Detailed explanation of the correct answer"\n    }\n  ]\n}`;
+            questionPrompt += `\n\nCRITICAL REQUIREMENTS:
+            1. Generate EXACTLY 50 unique, non-repetitive questions
+            2. Each question must be different from all others
+            3. Cover diverse topics within the subject
+            4. Use appropriate JAMB examination difficulty level
+            5. Include detailed explanations for each answer
+            6. Use clear, grammatically correct English
+            7. Ensure all questions are academically sound
+            
+            RETURN ONLY valid JSON in this exact format:
+            {
+              "questions": [
+                {
+                  "question_text": "Question text here",
+                  "option_a": "Option A text",
+                  "option_b": "Option B text", 
+                  "option_c": "Option C text",
+                  "option_d": "Option D text",
+                  "correct_answer": "A",
+                  "explanation": "Detailed explanation of the correct answer"
+                }
+              ]
+            }`;
 
             // Generate all 50 questions in one API call instead of splitting by topics
             const allQuestions = [];
@@ -99,7 +177,7 @@ Deno.serve(async (req) => {
                             role: 'user',
                             content: questionPrompt
                         }],
-                        max_tokens: 8000, // Increased for 50 questions
+                        max_tokens: 16000, // Increased significantly for 50 comprehensive questions
                         temperature: 0.7
                     })
                 });

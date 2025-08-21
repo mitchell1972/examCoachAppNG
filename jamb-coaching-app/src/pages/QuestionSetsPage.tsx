@@ -56,8 +56,8 @@ export default function QuestionSetsPage() {
       return;
     }
     
-    // Navigate to practice with question set ID
-    navigate(`/practice/${subject}?question_set_id=${questionSet.id}`);
+    // Navigate to practice with question set ID - FIXED ROUTE
+    navigate(`/subject/${encodeURIComponent(subject || '')}?question_set_id=${questionSet.id}`);
   };
 
   const handleDeleteQuestionSet = (questionSet: QuestionSet) => {
