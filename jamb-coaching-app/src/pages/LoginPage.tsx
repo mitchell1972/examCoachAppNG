@@ -29,17 +29,7 @@ export default function LoginPage() {
     }
   };
 
-  const handleDemoLogin = async (email: string, password: string) => {
-    setLoading(true);
-    try {
-      await signIn(email, password);
-      navigate('/dashboard', { replace: true });
-    } catch (error: any) {
-      toast.error('Demo account not available');
-    } finally {
-      setLoading(false);
-    }
-  };
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -117,27 +107,7 @@ export default function LoginPage() {
             </Link>
           </div>
         </form>
-        
-        {/* Demo accounts - Quick login buttons */}
-        <div className="mt-6 bg-blue-50 border border-blue-200 rounded-md p-4">
-          <h3 className="text-sm font-medium text-blue-800 mb-3">Quick Demo Access:</h3>
-          <div className="space-y-2">
-            <button
-              onClick={() => handleDemoLogin('student@demo.com', 'password123')}
-              disabled={loading}
-              className="w-full text-xs bg-blue-600 text-white py-2 px-3 rounded hover:bg-blue-700 disabled:opacity-50"
-            >
-              Login as Demo Student
-            </button>
-            <button
-              onClick={() => handleDemoLogin('admin@demo.com', 'password123')}
-              disabled={loading}
-              className="w-full text-xs bg-purple-600 text-white py-2 px-3 rounded hover:bg-purple-700 disabled:opacity-50"
-            >
-              Login as Demo Admin
-            </button>
-          </div>
-        </div>
+
       </div>
     </div>
   );
