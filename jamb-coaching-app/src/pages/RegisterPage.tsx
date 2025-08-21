@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { NIGERIAN_STATES } from '../lib/supabase';
 import toast from 'react-hot-toast';
 
 export default function RegisterPage() {
@@ -9,15 +8,13 @@ export default function RegisterPage() {
     email: '',
     password: '',
     confirmPassword: '',
-    fullName: '',
-    schoolName: '',
-    state: ''
+    fullName: ''
   });
   const [loading, setLoading] = useState(false);
   const { signUp } = useAuth();
   const navigate = useNavigate();
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
@@ -27,7 +24,8 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.email || !formData.password || !formData.fullName) {
+    // Simple validation
+    if (!formData.email.trim() || !formData.password || !formData.fullName.trim()) {
       toast.error('Please fill in all required fields');
       return;
     }
@@ -44,14 +42,10 @@ export default function RegisterPage() {
 
     setLoading(true);
     try {
-      await signUp(formData.email, formData.password, {
-        full_name: formData.fullName,
-        school_name: formData.schoolName || undefined,
-        state: formData.state || undefined
-      });
-      navigate('/dashboard');
+      await signUp(formData.email, formData.password, formData.fullName);
+      navigate('/dashboard', { replace: true });
     } catch (error: any) {
-      console.error('Registration error:', error);
+      // Error already handled in AuthContext
     } finally {
       setLoading(false);
     }
@@ -79,14 +73,15 @@ export default function RegisterPage() {
           <div className="space-y-4">
             <div>
               <label htmlFor="fullName" className="block text-sm font-medium text-gray-700">
-                Full Name *
+                Full Name
               </label>
               <input
                 id="fullName"
                 name="fullName"
                 type="text"
                 required
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                disabled={loading}
+                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm disabled:opacity-50"
                 placeholder="Enter your full name"
                 value={formData.fullName}
                 onChange={handleChange}
@@ -95,7 +90,7 @@ export default function RegisterPage() {
             
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email Address *
+                Email Address
               </label>
               <input
                 id="email"
@@ -103,7 +98,8 @@ export default function RegisterPage() {
                 type="email"
                 autoComplete="email"
                 required
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                disabled={loading}
+                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm disabled:opacity-50"
                 placeholder="Enter your email address"
                 value={formData.email}
                 onChange={handleChange}
@@ -112,7 +108,7 @@ export default function RegisterPage() {
             
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Password *
+                Password (minimum 6 characters)
               </label>
               <input
                 id="password"
@@ -120,7 +116,8 @@ export default function RegisterPage() {
                 type="password"
                 autoComplete="new-password"
                 required
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                disabled={loading}
+                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm disabled:opacity-50"
                 placeholder="Create a password"
                 value={formData.password}
                 onChange={handleChange}
@@ -129,7 +126,7 @@ export default function RegisterPage() {
             
             <div>
               <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
-                Confirm Password *
+                Confirm Password
               </label>
               <input
                 id="confirmPassword"
@@ -137,46 +134,12 @@ export default function RegisterPage() {
                 type="password"
                 autoComplete="new-password"
                 required
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                disabled={loading}
+                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm disabled:opacity-50"
                 placeholder="Confirm your password"
                 value={formData.confirmPassword}
                 onChange={handleChange}
               />
-            </div>
-            
-            <div>
-              <label htmlFor="schoolName" className="block text-sm font-medium text-gray-700">
-                School Name (Optional)
-              </label>
-              <input
-                id="schoolName"
-                name="schoolName"
-                type="text"
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                placeholder="Enter your school name"
-                value={formData.schoolName}
-                onChange={handleChange}
-              />
-            </div>
-            
-            <div>
-              <label htmlFor="state" className="block text-sm font-medium text-gray-700">
-                State (Optional)
-              </label>
-              <select
-                id="state"
-                name="state"
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                value={formData.state}
-                onChange={handleChange}
-              >
-                <option value="">Select your state</option>
-                {NIGERIAN_STATES.map((state) => (
-                  <option key={state} value={state}>
-                    {state}
-                  </option>
-                ))}
-              </select>
             </div>
           </div>
 
@@ -184,7 +147,7 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (
                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
@@ -200,6 +163,16 @@ export default function RegisterPage() {
             </Link>
           </div>
         </form>
+        
+        {/* Simple info about quick registration */}
+        <div className="mt-6 bg-green-50 border border-green-200 rounded-md p-4">
+          <h3 className="text-sm font-medium text-green-800 mb-2">Quick Registration:</h3>
+          <div className="text-xs text-green-700">
+            <p>• No email verification required</p>
+            <p>• Instant access to JAMB practice questions</p>
+            <p>• Start practicing immediately after signup</p>
+          </div>
+        </div>
       </div>
     </div>
   );

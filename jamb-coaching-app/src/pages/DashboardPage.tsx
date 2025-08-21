@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { useSubscription } from '../hooks/useSubscription';
 import { useQuery } from '@tanstack/react-query';
 import {
   BookOpen as BookOpenIcon,
@@ -9,23 +8,13 @@ import {
   Clock as ClockIcon,
   BarChart3 as ChartBarIcon,
   Flame as FireIcon,
-  Calendar as CalendarIcon,
-  Lock as LockIcon
+  Calendar as CalendarIcon
 } from 'lucide-react';
-import { getUserProgress, analyzePerformance, getDailyQuestions, JAMB_SUBJECTS } from '../lib/supabase';
-import toast from 'react-hot-toast';
+import { getDailyQuestions, JAMB_SUBJECTS } from '../lib/supabase';
 
 export default function DashboardPage() {
   const { user, profile } = useAuth();
-  const { getQuestionSetAccess, getSubscriptionStatus, isSubscribed, getAvailableQuestionSets } = useSubscription();
   const [selectedSubject, setSelectedSubject] = useState<string>(JAMB_SUBJECTS[0]);
-
-  // Fetch user progress
-  const { data: userProgress = [], isLoading: progressLoading } = useQuery({
-    queryKey: ['userProgress', user?.id],
-    queryFn: () => user ? getUserProgress(user.id) : [],
-    enabled: !!user
-  });
 
   // Fetch daily questions for selected subject
   const { data: dailyQuestions = [], isLoading: questionsLoading } = useQuery({
@@ -33,52 +22,6 @@ export default function DashboardPage() {
     queryFn: () => getDailyQuestions(selectedSubject),
     enabled: !!selectedSubject
   });
-
-  // Calculate overall stats
-  const overallStats = React.useMemo(() => {
-    if (!userProgress.length) {
-      return {
-        totalQuestions: 0,
-        totalCorrect: 0,
-        averageScore: 0,
-        predictedJambScore: 0,
-        studyStreak: profile?.study_streak || 0
-      };
-    }
-
-    const totals = userProgress.reduce(
-      (acc, progress) => {
-        acc.totalQuestions += progress.total_questions_attempted;
-        acc.totalCorrect += progress.total_questions_correct;
-        acc.predictedJambScore = Math.max(acc.predictedJambScore, progress.predicted_jamb_score);
-        return acc;
-      },
-      { totalQuestions: 0, totalCorrect: 0, predictedJambScore: 0 }
-    );
-
-    return {
-      ...totals,
-      averageScore: totals.totalQuestions > 0 ? (totals.totalCorrect / totals.totalQuestions) * 100 : 0,
-      studyStreak: profile?.study_streak || 0
-    };
-  }, [userProgress, profile]);
-
-  const subjectProgress = React.useMemo(() => {
-    return JAMB_SUBJECTS.map(subject => {
-      const progress = userProgress.find(p => p.subject === subject);
-      const questionSets = getAvailableQuestionSets(subject);
-      const status = getSubscriptionStatus(subject);
-      return {
-        subject,
-        score: progress?.average_score || 0,
-        attempted: progress?.total_questions_attempted || 0,
-        availableQuestionSets: questionSets,
-        status,
-        weakTopics: progress?.weak_topics || [],
-        strongTopics: progress?.strong_topics || []
-      };
-    });
-  }, [userProgress, getAvailableQuestionSets, getSubscriptionStatus]);
 
   return (
     <div className="space-y-6">
@@ -92,7 +35,7 @@ export default function DashboardPage() {
         </p>
       </div>
 
-      {/* Stats Overview */}
+      {/* Basic Stats Overview */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="bg-white overflow-hidden shadow rounded-lg">
           <div className="p-5">
@@ -103,10 +46,10 @@ export default function DashboardPage() {
               <div className="ml-5 w-0 flex-1">
                 <dl>
                   <dt className="text-sm font-medium text-gray-500 truncate">
-                    Questions Practiced
+                    Role
                   </dt>
-                  <dd className="text-lg font-medium text-gray-900">
-                    {overallStats.totalQuestions}
+                  <dd className="text-lg font-medium text-gray-900 capitalize">
+                    {profile?.role || 'Student'}
                   </dd>
                 </dl>
               </div>
@@ -123,10 +66,10 @@ export default function DashboardPage() {
               <div className="ml-5 w-0 flex-1">
                 <dl>
                   <dt className="text-sm font-medium text-gray-500 truncate">
-                    Average Score
+                    Account Status
                   </dt>
                   <dd className="text-lg font-medium text-gray-900">
-                    {Math.round(overallStats.averageScore)}%
+                    Active
                   </dd>
                 </dl>
               </div>
@@ -143,10 +86,10 @@ export default function DashboardPage() {
               <div className="ml-5 w-0 flex-1">
                 <dl>
                   <dt className="text-sm font-medium text-gray-500 truncate">
-                    Predicted JAMB Score
+                    Email
                   </dt>
-                  <dd className="text-lg font-medium text-gray-900">
-                    {overallStats.predictedJambScore || 'N/A'}
+                  <dd className="text-sm font-medium text-gray-900">
+                    {profile?.email || user?.email || 'Not available'}
                   </dd>
                 </dl>
               </div>
@@ -163,10 +106,10 @@ export default function DashboardPage() {
               <div className="ml-5 w-0 flex-1">
                 <dl>
                   <dt className="text-sm font-medium text-gray-500 truncate">
-                    Study Streak
+                    Status
                   </dt>
-                  <dd className="text-lg font-medium text-gray-900">
-                    {overallStats.studyStreak} days
+                  <dd className="text-lg font-medium text-green-600">
+                    Online
                   </dd>
                 </dl>
               </div>
@@ -175,64 +118,25 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Subject Performance */}
+      {/* Subject Selection */}
       <div className="bg-white shadow rounded-lg">
         <div className="px-4 py-5 sm:p-6">
           <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
-            Subject Performance
+            Choose Your Subject
           </h3>
-          <div className="space-y-4">
-            {subjectProgress.map((subject) => (
-              <div key={subject.subject} className="flex items-center justify-between p-4 border rounded-lg">
-                <div className="flex items-center space-x-4">
-                  <div className="flex-shrink-0">
-                    {subject.status === 'expired' && !isSubscribed ? (
-                      <LockIcon className="h-6 w-6 text-red-400" />
-                    ) : (
-                      <BookOpenIcon className="h-6 w-6 text-gray-400" />
-                    )}
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-900">{subject.subject}</h4>
-                    <p className="text-sm text-gray-500">
-                      {subject.attempted} questions attempted
-                      {!isSubscribed && (
-                        <span className={`ml-2 ${subject.status === 'expired' ? 'text-red-600' : 'text-blue-600'}`}>
-                          • {subject.availableQuestionSets.accessible}/{subject.availableQuestionSets.total} question sets accessible
-                        </span>
-                      )}
-                    </p>
-                  </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {JAMB_SUBJECTS.map((subject) => (
+              <Link
+                key={subject}
+                to={`/subject/${encodeURIComponent(subject)}`}
+                className="flex items-center p-4 border border-gray-300 rounded-lg hover:bg-gray-50 hover:border-blue-300 transition-colors"
+              >
+                <BookOpenIcon className="h-6 w-6 text-blue-500 mr-3" />
+                <div>
+                  <p className="text-sm font-medium text-gray-900">{subject}</p>
+                  <p className="text-sm text-gray-500">Practice questions</p>
                 </div>
-                <div className="flex items-center space-x-4">
-                  <div className="text-right">
-                    <p className="text-sm font-medium text-gray-900">
-                      {Math.round(subject.score)}%
-                    </p>
-                    <div className="w-20 bg-gray-200 rounded-full h-2">
-                      <div
-                        className="bg-blue-600 h-2 rounded-full"
-                        style={{ width: `${Math.min(subject.score, 100)}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                  {subject.status === 'expired' && !isSubscribed ? (
-                    <Link
-                      to="/pricing"
-                      className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700"
-                    >
-                      Upgrade
-                    </Link>
-                  ) : (
-                    <Link
-                      to={`/subject/${encodeURIComponent(subject.subject)}`}
-                      className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200"
-                    >
-                      Practice
-                    </Link>
-                  )}
-                </div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
@@ -321,8 +225,8 @@ export default function DashboardPage() {
             >
               <ChartBarIcon className="h-6 w-6 text-green-500 mr-3" />
               <div>
-                <p className="text-sm font-medium text-gray-900">View Progress</p>
-                <p className="text-sm text-gray-500">Check detailed analytics</p>
+                <p className="text-sm font-medium text-gray-900">View Profile</p>
+                <p className="text-sm text-gray-500">Check your information</p>
               </div>
             </Link>
             

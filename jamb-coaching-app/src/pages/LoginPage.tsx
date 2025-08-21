@@ -13,17 +13,29 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!email || !password) {
-      toast.error('Please fill in all fields');
+    if (!email.trim() || !password) {
+      toast.error('Please enter both email and password');
       return;
     }
 
     setLoading(true);
     try {
       await signIn(email, password);
-      navigate('/dashboard');
+      navigate('/dashboard', { replace: true });
     } catch (error: any) {
-      console.error('Login error:', error);
+      // Error already handled in AuthContext
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDemoLogin = async (email: string, password: string) => {
+    setLoading(true);
+    try {
+      await signIn(email, password);
+      navigate('/dashboard', { replace: true });
+    } catch (error: any) {
+      toast.error('Demo account not available');
     } finally {
       setLoading(false);
     }
@@ -48,9 +60,9 @@ export default function LoginPage() {
         </div>
         
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="rounded-md shadow-sm -space-y-px">
+          <div className="space-y-4">
             <div>
-              <label htmlFor="email-address" className="sr-only">
+              <label htmlFor="email-address" className="block text-sm font-medium text-gray-700">
                 Email address
               </label>
               <input
@@ -59,14 +71,15 @@ export default function LoginPage() {
                 type="email"
                 autoComplete="email"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="Email address"
+                disabled={loading}
+                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm disabled:opacity-50"
+                placeholder="Enter your email address"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
             <div>
-              <label htmlFor="password" className="sr-only">
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                 Password
               </label>
               <input
@@ -75,8 +88,9 @@ export default function LoginPage() {
                 type="password"
                 autoComplete="current-password"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="Password"
+                disabled={loading}
+                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm disabled:opacity-50"
+                placeholder="Enter your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
@@ -87,12 +101,12 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (
                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
               ) : (
-                'Sign in'
+                'Sign In'
               )}
             </button>
           </div>
@@ -104,12 +118,24 @@ export default function LoginPage() {
           </div>
         </form>
         
-        {/* Demo accounts info */}
+        {/* Demo accounts - Quick login buttons */}
         <div className="mt-6 bg-blue-50 border border-blue-200 rounded-md p-4">
-          <h3 className="text-sm font-medium text-blue-800 mb-2">Demo Accounts (for testing):</h3>
-          <div className="text-xs text-blue-700 space-y-1">
-            <p><strong>Student:</strong> student@demo.com / password123</p>
-            <p><strong>Admin:</strong> admin@demo.com / password123</p>
+          <h3 className="text-sm font-medium text-blue-800 mb-3">Quick Demo Access:</h3>
+          <div className="space-y-2">
+            <button
+              onClick={() => handleDemoLogin('student@demo.com', 'password123')}
+              disabled={loading}
+              className="w-full text-xs bg-blue-600 text-white py-2 px-3 rounded hover:bg-blue-700 disabled:opacity-50"
+            >
+              Login as Demo Student
+            </button>
+            <button
+              onClick={() => handleDemoLogin('admin@demo.com', 'password123')}
+              disabled={loading}
+              className="w-full text-xs bg-purple-600 text-white py-2 px-3 rounded hover:bg-purple-700 disabled:opacity-50"
+            >
+              Login as Demo Admin
+            </button>
           </div>
         </div>
       </div>

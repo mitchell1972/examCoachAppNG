@@ -2,20 +2,26 @@ import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
-interface PublicRouteProps {
-  children: React.ReactNode;
-}
-
-export default function PublicRoute({ children }: PublicRouteProps) {
+export default function PublicRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
 
+  // Show loading spinner while checking auth
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
       </div>
     );
   }
 
-  return user ? <Navigate to="/dashboard" replace /> : <>{children}</>;
+  // Redirect to dashboard if already authenticated
+  if (user) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  // User is not authenticated, render public page
+  return <>{children}</>;
 }
