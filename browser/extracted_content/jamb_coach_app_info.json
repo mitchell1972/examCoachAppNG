@@ -1,0 +1,30 @@
+📄 Extracted from page: jamb-coaching-app-fixed
+URL: https://g2e49uuga64y.space.minimax.io/
+
+Extracted content:
+```json
+{
+  "title": "JAMB Coach App",
+  "url": "https://g2e49uuga64y.space.minimax.io/",
+  "summary": "JAMB Coach is an AI-powered coaching application designed to help Nigerian students ace their JAMB (Joint Admissions and Matriculation Board) exam. It offers personalized questions, smart analytics, and comprehensive practice across five core subjects. The app is mobile-optimized and includes features like daily practice, score prediction, and offline support, aiming to improve students' scores and aid university admission.",
+  "key_points": [
+    "AI-powered JAMB coaching app.",
+    "Offers personalized questions tailored to learning needs.",
+    "Provides smart analytics and performance insights to track progress.",
+    "Mobile-optimized Progressive Web App (PWA) for practice anywhere.",
+    "Includes daily practice with 20 fresh questions per subject every 3 days.",
+    "Features JAMB score prediction based on practice performance.",
+    "Supports offline usage for uninterrupted practice.",
+    "Covers Mathematics, Physics, Chemistry, Biology, and English Language.",
+    "Aimed at Nigerian students preparing for the JAMB exam.",
+    "Includes testimonials from successful students.",
+    "Developed by MiniMax Agent.",
+    "Copyright 2025 JAMB Coach."
+  ],
+  "relevant_links": [
+    "/login",
+    "/register"
+  ],
+  "file_name": "jamb_coach_app_info.json"
+}
+```
