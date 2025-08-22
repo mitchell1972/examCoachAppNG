@@ -1,0 +1,112 @@
+
+> react_repo@0.0.0 build:prod /workspace/jamb-coaching-app
+> yes | pnpm install && rm -rf node_modules/.vite-temp && tsc -b && BUILD_MODE=prod vite build
+
+Lockfile is up to date, resolution step is skipped
+Progress: resolved 1, reused 0, downloaded 0, added 0
+Packages: +454
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Progress: resolved 1, reused 0, downloaded 0, added 0
+Progress: resolved 454, reused 0, downloaded 0, added 0
+1
+   ╭──────────────────────────────────────────╮
+   │                                          │
+   │   Update available! 10.12.4 → 10.15.0.   │
+   │   Changelog: https://pnpm.io/v/10.15.0   │
+   │     To update, run: pnpm add -g pnpm     │
+   │                                          │
+   ╰──────────────────────────────────────────╯
+
+Progress: resolved 454, reused 0, downloaded 1, added 0
+Progress: resolved 454, reused 0, downloaded 52, added 42
+88, added 87Progress: resolved 454, reused 0, downloaded 105, added 105
+42, added 14258, added 15878, added 17204, added 20439, added 23966, added 26694, added 294306, added 30636, added 3375, added 37596, added 396419, added 41924, added 42332, added 4319, added 43942, added 4424, added 4448, added 44850, added 45012, added 4523, added 4534Progress: resolved 454, reused 0, downloaded 454, added 454, done
+
+dependencies:
++ @hookform/resolvers 3.10.0
++ @radix-ui/react-accordion 1.2.4
++ @radix-ui/react-alert-dialog 1.1.7
++ @radix-ui/react-aspect-ratio 1.1.3
++ @radix-ui/react-avatar 1.1.4
++ @radix-ui/react-checkbox 1.1.5
++ @radix-ui/react-collapsible 1.1.4
++ @radix-ui/react-context-menu 2.2.7
++ @radix-ui/react-dialog 1.1.7
++ @radix-ui/react-dropdown-menu 2.1.7
++ @radix-ui/react-hover-card 1.1.7
++ @radix-ui/react-label 2.1.3
++ @radix-ui/react-menubar 1.1.7
++ @radix-ui/react-navigation-menu 1.2.6
++ @radix-ui/react-popover 1.1.7
++ @radix-ui/react-progress 1.1.3
++ @radix-ui/react-radio-group 1.2.4
++ @radix-ui/react-scroll-area 1.2.4
++ @radix-ui/react-select 2.1.7
++ @radix-ui/react-separator 1.1.3
++ @radix-ui/react-slider 1.2.4
++ @radix-ui/react-slot 1.2.0
++ @radix-ui/react-switch 1.1.4
++ @radix-ui/react-tabs 1.1.4
++ @radix-ui/react-toast 1.2.7
++ @radix-ui/react-toggle 1.1.3
++ @radix-ui/react-toggle-group 1.1.3
++ @radix-ui/react-tooltip 1.2.0
++ @supabase/supabase-js 2.55.0
++ @tanstack/react-query 5.85.5
++ class-variance-authority 0.7.1
++ clsx 2.1.1
++ cmdk 1.0.0
++ date-fns 3.6.0
++ embla-carousel-react 8.6.0
++ input-otp 1.4.2
++ lucide-react 0.364.0
++ next-themes 0.4.6
++ react 18.3.1
++ react-day-picker 8.10.1
++ react-dom 18.3.1
++ react-hook-form 7.55.0
++ react-hot-toast 2.6.0
++ react-query 3.39.3
++ react-resizable-panels 2.1.7
++ react-router-dom 6.30.0
++ recharts 2.15.2
++ sonner 1.7.4
++ tailwind-merge 2.6.0
++ tailwindcss-animate 1.0.7
++ vaul 1.1.2
++ zod 3.24.2
+
+devDependencies:
++ @eslint/js 9.24.0
++ @types/node 22.14.1
++ @types/react 18.3.20
++ @types/react-dom 18.3.6
++ @types/react-router-dom 5.3.3
++ @vitejs/plugin-react 4.3.4
++ autoprefixer 10.4.20
++ eslint 9.24.0
++ eslint-plugin-react-hooks 5.2.0
++ eslint-plugin-react-refresh 0.4.19
++ globals 15.15.0
++ postcss 8.4.49
++ tailwindcss 3.4.16
++ typescript 5.6.3
++ typescript-eslint 8.29.1
++ vite 6.2.6
++ vite-plugin-source-info 1.0.0
+
+╭ Warning ─────────────────────────────────────────────────────────────────────╮
+│                                                                              │
+│   Ignored build scripts: esbuild.                                            │
+│   Run "pnpm approve-builds" to pick which dependencies should be allowed     │
+│   to run scripts.                                                            │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+Done in 8.8s using pnpm v10.12.4
+vite v6.2.6 building for production...
+transforming (1) src/main.tsxtransforming (6) node_modules/.pnpm/react@18.3.1/node_modules/react/cjs/reatransforming (27) node_modules/.pnpm/react@18.3.1/node_modules/react/jsx-rutransforming (53) node_modules/.pnpm/@tanstack+query-core@5.85.5/node_modultransforming (73) src/lib/supabase.tstransforming (152) node_modules/.pnpm/lucide-react@0.364.0_react@18.3.1/nodtransforming (353) node_modules/.pnpm/lucide-react@0.364.0_react@18.3.1/nodtransforming (622) node_modules/.pnpm/lucide-react@0.364.0_react@18.3.1/nodtransforming (893) node_modules/.pnpm/lucide-react@0.364.0_react@18.3.1/nodtransforming (1173) node_modules/.pnpm/lucide-react@0.364.0_react@18.3.1/notransforming (1448) node_modules/.pnpm/lucide-react@0.364.0_react@18.3.1/notransforming (1543) node_modules/.pnpm/@supabase+supabase-js@2.55.0/node_motransforming (1567) node_modules/.pnpm/react-dom@18.3.1_react@18.3.1/node_m✓ 1620 modules transformed.
+rendering chunks (1)...computing gzip size (0)...computing gzip size (1)...computing gzip size (2)...computing gzip size (3)...dist/index.html                   0.96 kB │ gzip:   0.57 kB
+dist/assets/index-BfTqLudg.css   30.84 kB │ gzip:   5.84 kB
+dist/assets/index-wfqvZbGK.js   451.00 kB │ gzip: 126.98 kB
+✓ built in 2.68s
