@@ -18,5 +18,10 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  base: process.env.NODE_ENV === 'production' ? '/examCoachAppNG/' : '/',
+  build: {
+    outDir: 'dist',
+    assetsDir: 'assets',
+  }
 })
 
